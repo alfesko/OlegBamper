@@ -38,7 +38,7 @@ app.post('/login', async (req, res) => {
             const match = await bcrypt.compare(password, user.password);
             if (match) {
                 req.session.user = username;
-                res.send('Авторизация успешна!');
+                res.redirect('/main.html'); // Переадресация на главную страницу
             } else {
                 res.status(401).send('Неправильный логин или пароль.');
             }

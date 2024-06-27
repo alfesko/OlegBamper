@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Main Page</title>
+    <link rel="stylesheet" href="public/styles.css">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+</head>
+<body>
+<div class="container">
+    <h2>Выбор запчастей</h2>
+    <form action="/search" method="get">
+        <label for="brand">Марка:</label>
+        <input type="text" id="brand" name="brand" required>
+
+        <label for="model">Модель:</label>
+        <input type="text" id="model" name="model" required>
+
+        <label for="article">Артикул объявления:</label>
+        <input type="text" id="article" name="article" required>
+
+        <label for="partNumber">Номер запчасти:</label>
+        <input type="text" id="partNumber" name="partNumber" required>
+
+        <button type="submit">Поиск</button>
+    </form>
+</div>
+</body>
+</html>
