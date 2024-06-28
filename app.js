@@ -1,27 +1,56 @@
 const express = require('express');
-const bodyParser = require('body-parser');
 const session = require('express-session');
+const path = require('path');
 const bcrypt = require('bcrypt');
 const { Pool } = require('pg');
 const dbConfig = require('./db-config');
 
 const app = express();
+const PORT = process.env.PORT || 3000;
 
 const pool = new Pool(dbConfig);
 
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
-
+// Настройка сессий
 app.use(session({
-    secret: 'secret',
+    secret: 'your_secret_key',
     resave: false,
     saveUninitialized: true,
+    cookie: { secure: false }
 }));
+
+app.use(express.urlencoded({ extended: true }));
 
 app.use(express.static(__dirname));
 
-app.get('/login', (req, res) => {
-    res.sendFile(__dirname + '/login.html');
+async function hashPassword(password) {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    return hashedPassword;
+}
+
+async function addUser(username, password) {
+    try {
+        const hashedPassword = await hashPassword(password);
+
+        const client = await pool.connect();
+        const result = await client.query('INSERT INTO users (username, password) VALUES ($1, $2)', [username, hashedPassword]);
+        client.release();
+
+        console.log(`Пользователь с логином '${username}' успешно добавлен в базу данных!`);
+    } catch (err) {
+        console.error('Ошибка при добавлении пользователя:', err);
+    }
+}
+
+app.post('/register', (req, res) => {
+    const { username, password } = req.body;
+
+    addUser(username, password)
+        .then(() => {
+            res.send('Пользователь успешно зарегистрирован!');
+        })
+        .catch(err => {
+            res.status(500).send('Ошибка при регистрации пользователя');
+        });
 });
 
 app.post('/login', async (req, res) => {
@@ -34,24 +63,42 @@ app.post('/login', async (req, res) => {
 
         if (result.rows.length > 0) {
             const user = result.rows[0];
+            const isPasswordMatch = await bcrypt.compare(password, user.password);
 
-            const match = await bcrypt.compare(password, user.password);
-            if (match) {
-                req.session.user = username;
-                res.redirect('/main.html'); // Переадресация на главную страницу
+            if (isPasswordMatch) {
+                req.session.loggedIn = true;
+                res.redirect('/');
             } else {
-                res.status(401).send('Неправильный логин или пароль.');
+                res.send('Неверные учетные данные');
             }
         } else {
-            res.status(401).send('Неправильный логин или пароль.');
+            res.send('Пользователь не найден');
         }
     } catch (err) {
-        console.error('Ошибка аутентификации:', err);
-        res.status(500).send('Внутренняя ошибка сервера.');
+        console.error('Ошибка при входе:', err);
+        res.status(500).send('Ошибка при входе пользователя');
     }
 });
 
-const PORT = process.env.PORT || 3000;
+app.get('/logout', (req, res) => {
+    req.session.destroy(err => {
+        if (err) {
+            console.error('Ошибка при выходе:', err);
+            return res.status(500).send('Ошибка при выходе');
+        }
+        res.clearCookie('connect.sid');
+        res.redirect('/');
+    });
+});
+
+app.get('/', (req, res) => {
+    if (req.session.loggedIn) {
+        res.sendFile(path.join(__dirname, 'protected', 'main.html'));
+    } else {
+        res.sendFile(path.join(__dirname, 'login.html'));
+    }
+});
+
 app.listen(PORT, () => {
     console.log(`Сервер запущен на порту ${PORT}`);
 });

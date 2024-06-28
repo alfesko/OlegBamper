@@ -18,4 +18,4 @@ async function addUser(username, password) {
     }
 }
 
-addUser('oleg', 'oleg27062024');
+    addUser('oleg', 'oleg27062024');
