@@ -12,10 +12,13 @@
     <h2>Выбор запчастей</h2>
     <form action="/search" method="get">
         <label for="brand">Марка:</label>
-        <input type="text" id="brand" name="brand" required>
+        <select id="brand" name="brand" onchange="populateModels()">
+            <option value="">Выберите марку</option>
+        </select>
 
         <label for="model">Модель:</label>
-        <input type="text" id="model" name="model" required>
+        <select id="model" name="model" required>
+        </select>
 
         <label for="article">Артикул объявления:</label>
         <input type="text" id="article" name="article" required>
@@ -28,5 +31,44 @@
 </div>
 
 <button class="logout-btn" onclick="location.href='/logout';">Выйти</button>
+
+<script>
+    function populateModels() {
+        const brandSelect = document.getElementById('brand');
+        const modelSelect = document.getElementById('model');
+        modelSelect.innerHTML = '';
+
+        fetch('/cars.json')
+            .then(response => response.json())
+            .then(data => {
+                const selectedBrand = brandSelect.value;
+
+                const selectedBrandObj = data.find(brand => brand.id === selectedBrand);
+
+                selectedBrandObj.models.forEach(model => {
+                    const option = document.createElement('option');
+                    option.value = model.id;
+                    option.textContent = model.name;
+                    modelSelect.appendChild(option);
+                });
+            })
+            .catch(error => console.error('Ошибка при загрузке данных:', error));
+    }
+
+    fetch('/cars.json')
+        .then(response => response.json())
+        .then(data => {
+            const brandSelect = document.getElementById('brand');
+
+            data.forEach(brand => {
+                const option = document.createElement('option');
+                option.value = brand.id;
+                option.textContent = brand.name;
+                brandSelect.appendChild(option);
+            });
+        })
+        .catch(error => console.error('Ошибка при загрузке данных:', error));
+</script>
+
 </body>
 </html>
