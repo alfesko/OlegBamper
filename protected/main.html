@@ -20,6 +20,37 @@
         <label for="model">Модель:</label>
         <input type="text" id="model" name="model" required autocomplete="off" oninput="handleModelInput(this.value)">
         <div id="model-autocomplete" class="autocomplete-items"></div>
+        <label for="engineVolume">Объем:</label>
+        <input type="text" id="engineVolume" name="engineVolume" required>
+        <div class="form-row">
+            <label for="transmission">Коробка:</label>
+            <select id="transmission" name="transmission" required>
+                <option value="АКПП">АКПП</option>
+                <option value="МКПП">МКПП</option>
+                <option value="РОБОТ">Робот</option>
+                <option value="ВАРИАТОР">Вариатор</option>
+            </select>
+            <label for="bodyType">Кузов:</label>
+            <select id="bodyType" name="bodyType" required>
+                <option value="универсал">Универсал</option>
+                <option value="седан">Седан</option>
+                <option value="хэтчбек">Хэтчбек</option>
+                <option value="внедорожник">Внедорожник</option>
+                <option value="минивэн">Минивэн</option>
+                <option value="купе">Купе</option>
+                <option value="лифтбек">Лифтбек</option>
+                <option value="пикап">Пикап</option>
+                <option value="кабриолет">Кабриолет</option>
+                <option value="фургон">Фургон</option>
+                <option value="грузовик">Грузовик</option>
+                <option value="бортовой">Бортовой</option>
+                <option value="тягач">Тягач</option>
+                <option value="автобус">Автобус</option>
+                <option value="прицеп">Прицеп</option>
+                <option value="полуприцеп">Полуприцеп</option>
+                <option value="погрузчик">Погрузчик</option>
+            </select>
+        </div>
         <label for="article">Артикул объявления:</label>
         <input type="text" id="article" name="article" required>
         <label for="partNumber">Номер запчасти:</label>
