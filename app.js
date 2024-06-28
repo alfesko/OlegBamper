@@ -3,6 +3,7 @@ const session = require('express-session');
 const path = require('path');
 const bcrypt = require('bcrypt');
 const { Pool } = require('pg');
+const pgSession = require('connect-pg-simple')(session);
 const dbConfig = require('./db-config');
 
 const app = express();
@@ -10,16 +11,19 @@ const PORT = process.env.PORT || 3000;
 
 const pool = new Pool(dbConfig);
 
-// Настройка сессий
 app.use(session({
+    store: new pgSession({
+        pool: pool,
+        tableName: 'session'
+    }),
     secret: 'your_secret_key',
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
     cookie: { secure: false }
 }));
 
 app.use(express.urlencoded({ extended: true }));
-
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(__dirname));
 
 async function hashPassword(password) {
@@ -30,11 +34,9 @@ async function hashPassword(password) {
 async function addUser(username, password) {
     try {
         const hashedPassword = await hashPassword(password);
-
         const client = await pool.connect();
-        const result = await client.query('INSERT INTO users (username, password) VALUES ($1, $2)', [username, hashedPassword]);
+        await client.query('INSERT INTO users (username, password) VALUES ($1, $2)', [username, hashedPassword]);
         client.release();
-
         console.log(`Пользователь с логином '${username}' успешно добавлен в базу данных!`);
     } catch (err) {
         console.error('Ошибка при добавлении пользователя:', err);
@@ -43,7 +45,6 @@ async function addUser(username, password) {
 
 app.post('/register', (req, res) => {
     const { username, password } = req.body;
-
     addUser(username, password)
         .then(() => {
             res.send('Пользователь успешно зарегистрирован!');
@@ -55,16 +56,13 @@ app.post('/register', (req, res) => {
 
 app.post('/login', async (req, res) => {
     const { username, password } = req.body;
-
     try {
         const client = await pool.connect();
         const result = await client.query('SELECT * FROM users WHERE username = $1', [username]);
         client.release();
-
         if (result.rows.length > 0) {
             const user = result.rows[0];
             const isPasswordMatch = await bcrypt.compare(password, user.password);
-
             if (isPasswordMatch) {
                 req.session.loggedIn = true;
                 res.redirect('/');
