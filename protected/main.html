@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Main Page</title>
+    <title>Выбор запчастей</title>
     <link rel="stylesheet" href="/public/styles.css">
     <link rel="icon" href="/car.ico" type="image/x-icon">
 </head>
@@ -19,7 +19,7 @@
         <select id="year" name="year">
         </select>
         <label for="model">Модель:</label>
-        <select id="model" name="model" required>
+        <select id="model" name="model" required onchange="populateYears()">
         </select>
         <label for="article">Артикул объявления:</label>
         <input type="text" id="article" name="article" required>
@@ -50,6 +50,35 @@
                     option.textContent = model.name;
                     modelSelect.appendChild(option);
                 });
+
+                // Populate years based on selected model
+                populateYears();
+            })
+            .catch(error => console.error('Ошибка при загрузке данных:', error));
+    }
+
+    function populateYears() {
+        const brandSelect = document.getElementById('brand');
+        const modelSelect = document.getElementById('model');
+        const yearSelect = document.getElementById('year');
+        yearSelect.innerHTML = '';
+
+        fetch('/cars.json')
+            .then(response => response.json())
+            .then(data => {
+                const selectedBrand = brandSelect.value;
+                const selectedBrandObj = data.find(brand => brand.id === selectedBrand);
+
+                const selectedModelId = modelSelect.value;
+                const selectedModel = selectedBrandObj.models.find(model => model.id === selectedModelId);
+
+                // Populate years starting from selected model's year-from to 2024
+                for (let year = selectedModel['year-from']; year <= 2024; year++) {
+                    const option = document.createElement('option');
+                    option.value = year;
+                    option.textContent = year;
+                    yearSelect.appendChild(option);
+                }
             })
             .catch(error => console.error('Ошибка при загрузке данных:', error));
     }
@@ -67,6 +96,8 @@
             });
         })
         .catch(error => console.error('Ошибка при загрузке данных:', error));
+
+    // Initial population of year select
     const yearSelect = document.getElementById('year');
     for (let year = 1900; year <= 2024; year++) {
         const option = document.createElement('option');
