@@ -59,7 +59,7 @@
     </form>
 </div>
 
-<button class="logout-btn" onclick="location.href='/logout';">Выйти</button>
+<button id="auth-button" class="auth-btn">Загрузка...</button>
 
 <div class="contact-info">
     <p>Время работы:</p>
@@ -80,6 +80,27 @@
 <div class="footer">
     <p>© ИП Щука О.Е., УНП 590236855, 22.04.2004, shchuka1971@mail.ru</p>
 </div>
+
+<script>
+    async function checkAuthStatus() {
+        try {
+            const response = await fetch('/auth-status');
+            const data = await response.json();
+            const authButton = document.getElementById('auth-button');
+            if (data.loggedIn) {
+                authButton.textContent = 'Выйти';
+                authButton.onclick = () => location.href = '/logout';
+            } else {
+                authButton.textContent = 'Войти';
+                authButton.onclick = () => location.href = '/login';
+            }
+        } catch (err) {
+            console.error('Ошибка при проверке статуса авторизации:', err);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', checkAuthStatus);
+</script>
 
 <script src="/scripts.js"></script>
 </body>

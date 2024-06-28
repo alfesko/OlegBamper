@@ -35,7 +35,7 @@ async function addUser(username, password) {
     try {
         const hashedPassword = await hashPassword(password);
         const client = await pool.connect();
-        await client.xquery('INSERT INTO users (username, password) VALUES ($1, $2)', [username, hashedPassword]);
+        await client.query('INSERT INTO users (username, password) VALUES ($1, $2)', [username, hashedPassword]);
         client.release();
         console.log(`Пользователь с логином '${username}' успешно добавлен в базу данных!`);
     } catch (err) {
@@ -89,12 +89,16 @@ app.get('/logout', (req, res) => {
     });
 });
 
+app.get('/auth-status', (req, res) => {
+    res.json({ loggedIn: !!req.session.loggedIn });
+});
+
 app.get('/', (req, res) => {
-    if (req.session.loggedIn) {
-        res.sendFile(path.join(__dirname, 'protected', 'main.html'));
-    } else {
-        res.sendFile(path.join(__dirname, 'login.html'));
-    }
+    res.sendFile(path.join(__dirname, 'protected', 'main.html'));
+});
+
+app.get('/login', (req, res) => {
+    res.sendFile(path.join(__dirname, 'login.html'));
 });
 
 app.listen(PORT, () => {
