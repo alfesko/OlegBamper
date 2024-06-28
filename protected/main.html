@@ -6,21 +6,40 @@
     <title>Выбор запчастей</title>
     <link rel="stylesheet" href="/public/styles.css">
     <link rel="icon" href="/car.ico" type="image/x-icon">
+    <style>
+        .autocomplete-items {
+            position: absolute;
+            border: 1px solid #d4d4d4;
+            max-height: 150px;
+            overflow-y: auto;
+            z-index: 99;
+        }
+
+        .autocomplete-items div {
+            padding: 10px;
+            cursor: pointer;
+            background-color: #fff;
+            border-bottom: 1px solid #d4d4d4;
+        }
+
+        .autocomplete-items div:hover {
+            background-color: #e9e9e9;
+        }
+    </style>
 </head>
 <body>
 <div class="container">
     <h2>Выбор запчастей</h2>
     <form action="/search" method="get">
         <label for="brand">Марка:</label>
-        <select id="brand" name="brand" onchange="populateModels()">
-            <option value="">Выберите марку</option>
-        </select>
+        <input type="text" id="brand" name="brand" autocomplete="off" oninput="handleBrandInput(this.value)">
+        <div id="brand-autocomplete" class="autocomplete-items"></div>
         <label for="year">Год выпуска:</label>
-        <select id="year" name="year">
-        </select>
+        <input type="text" id="year" name="year" autocomplete="off" oninput="handleYearInput(this.value)">
+        <div id="year-autocomplete" class="autocomplete-items"></div>
         <label for="model">Модель:</label>
-        <select id="model" name="model" required onchange="populateYears()">
-        </select>
+        <input type="text" id="model" name="model" required autocomplete="off" oninput="handleModelInput(this.value)">
+        <div id="model-autocomplete" class="autocomplete-items"></div>
         <label for="article">Артикул объявления:</label>
         <input type="text" id="article" name="article" required>
         <label for="partNumber">Номер запчасти:</label>
@@ -32,78 +51,126 @@
 <button class="logout-btn" onclick="location.href='/logout';">Выйти</button>
 
 <script>
-    function populateModels() {
-        const brandSelect = document.getElementById('brand');
-        const modelSelect = document.getElementById('model');
-        modelSelect.innerHTML = '';
-
-        fetch('/cars.json')
-            .then(response => response.json())
-            .then(data => {
-                const selectedBrand = brandSelect.value;
-
-                const selectedBrandObj = data.find(brand => brand.id === selectedBrand);
-
-                selectedBrandObj.models.forEach(model => {
-                    const option = document.createElement('option');
-                    option.value = model.id;
-                    option.textContent = model.name;
-                    modelSelect.appendChild(option);
-                });
-
-                // Populate years based on selected model
-                populateYears();
-            })
-            .catch(error => console.error('Ошибка при загрузке данных:', error));
-    }
-
-    function populateYears() {
-        const brandSelect = document.getElementById('brand');
-        const modelSelect = document.getElementById('model');
-        const yearSelect = document.getElementById('year');
-        yearSelect.innerHTML = '';
-
-        fetch('/cars.json')
-            .then(response => response.json())
-            .then(data => {
-                const selectedBrand = brandSelect.value;
-                const selectedBrandObj = data.find(brand => brand.id === selectedBrand);
-
-                const selectedModelId = modelSelect.value;
-                const selectedModel = selectedBrandObj.models.find(model => model.id === selectedModelId);
-
-                // Populate years starting from selected model's year-from to 2024
-                for (let year = selectedModel['year-from']; year <= 2024; year++) {
-                    const option = document.createElement('option');
-                    option.value = year;
-                    option.textContent = year;
-                    yearSelect.appendChild(option);
-                }
-            })
-            .catch(error => console.error('Ошибка при загрузке данных:', error));
-    }
+    let carData;
 
     fetch('/cars.json')
         .then(response => response.json())
         .then(data => {
-            const brandSelect = document.getElementById('brand');
-
-            data.forEach(brand => {
-                const option = document.createElement('option');
-                option.value = brand.id;
-                option.textContent = brand.name;
-                brandSelect.appendChild(option);
-            });
+            carData = data;
         })
         .catch(error => console.error('Ошибка при загрузке данных:', error));
 
-    // Initial population of year select
-    const yearSelect = document.getElementById('year');
-    for (let year = 1908; year <= 2024; year++) {
-        const option = document.createElement('option');
-        option.value = year;
-        option.textContent = year;
-        yearSelect.appendChild(option);
+    function handleBrandInput(input) {
+        const autocompleteContainer = document.getElementById('brand-autocomplete');
+        autocompleteContainer.innerHTML = '';
+
+        if (!input) {
+            return;
+        }
+
+        const filteredBrands = carData.filter(brand => brand.name.toLowerCase().includes(input.toLowerCase()));
+
+        filteredBrands.forEach(brand => {
+            const option = document.createElement('div');
+            option.textContent = brand.name;
+            option.onclick = function() {
+                document.getElementById('brand').value = brand.name;
+                populateModels(brand.id);
+                autocompleteContainer.innerHTML = '';
+            };
+            autocompleteContainer.appendChild(option);
+        });
+    }
+
+    function handleModelInput(input) {
+        const autocompleteContainer = document.getElementById('model-autocomplete');
+        autocompleteContainer.innerHTML = '';
+
+        const brandInput = document.getElementById('brand').value;
+        const selectedBrand = carData.find(brand => brand.name.toLowerCase() === brandInput.toLowerCase());
+
+        if (!selectedBrand || !input) {
+            return;
+        }
+
+        const filteredModels = selectedBrand.models.filter(model => model.name.toLowerCase().includes(input.toLowerCase()));
+
+        filteredModels.forEach(model => {
+            const option = document.createElement('div');
+            option.textContent = model.name;
+            option.onclick = function() {
+                document.getElementById('model').value = model.name;
+                populateYears(model['year-from']);
+                autocompleteContainer.innerHTML = '';
+            };
+            autocompleteContainer.appendChild(option);
+        });
+    }
+
+    function handleYearInput(input) {
+        const autocompleteContainer = document.getElementById('year-autocomplete');
+        autocompleteContainer.innerHTML = '';
+
+        const brandInput = document.getElementById('brand').value;
+        const modelInput = document.getElementById('model').value;
+
+        if (!brandInput || !modelInput || !input) {
+            return;
+        }
+
+        const selectedBrand = carData.find(brand => brand.name.toLowerCase() === brandInput.toLowerCase());
+        const selectedModel = selectedBrand.models.find(model => model.name.toLowerCase() === modelInput.toLowerCase());
+
+        if (!selectedModel) {
+            return;
+        }
+
+        const startYear = selectedModel['year-from'];
+        const currentYear = new Date().getFullYear();
+
+        // Generate years based on user input similarity
+        for (let year = startYear; year <= currentYear; year++) {
+            const option = document.createElement('div');
+            option.textContent = year;
+            option.onclick = function() {
+                document.getElementById('year').value = year;
+                autocompleteContainer.innerHTML = '';
+            };
+            autocompleteContainer.appendChild(option);
+        }
+    }
+
+    function populateModels(brandId) {
+        const brandSelect = document.getElementById('brand');
+        const modelSelect = document.getElementById('model');
+        modelSelect.innerHTML = '';
+
+        const selectedBrandObj = carData.find(brand => brand.id === brandId);
+
+        selectedBrandObj.models.forEach(model => {
+            const option = document.createElement('option');
+            option.value = model.id;
+            option.textContent = model.name;
+            modelSelect.appendChild(option);
+        });
+
+        populateYears(selectedBrandObj.models[0]['year-from']);
+    }
+
+    function populateYears(startYear) {
+        const yearSelect = document.getElementById('year');
+        yearSelect.innerHTML = '';
+
+        const currentYear = new Date().getFullYear();
+
+        startYear = startYear || 1900; // Default start year if not provided
+
+        for (let year = startYear; year <= currentYear; year++) {
+            const option = document.createElement('option');
+            option.value = year;
+            option.textContent = year;
+            yearSelect.appendChild(option);
+        }
     }
 </script>
 
