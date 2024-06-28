@@ -35,7 +35,7 @@ async function addUser(username, password) {
     try {
         const hashedPassword = await hashPassword(password);
         const client = await pool.connect();
-        await client.query('INSERT INTO users (username, password) VALUES ($1, $2)', [username, hashedPassword]);
+        await client.xquery('INSERT INTO users (username, password) VALUES ($1, $2)', [username, hashedPassword]);
         client.release();
         console.log(`Пользователь с логином '${username}' успешно добавлен в базу данных!`);
     } catch (err) {
