@@ -15,17 +15,16 @@
         <select id="brand" name="brand" onchange="populateModels()">
             <option value="">Выберите марку</option>
         </select>
-
+        <label for="year">Год выпуска:</label>
+        <select id="year" name="year">
+        </select>
         <label for="model">Модель:</label>
         <select id="model" name="model" required>
         </select>
-
         <label for="article">Артикул объявления:</label>
         <input type="text" id="article" name="article" required>
-
         <label for="partNumber">Номер запчасти:</label>
         <input type="text" id="partNumber" name="partNumber" required>
-
         <button type="submit">Поиск</button>
     </form>
 </div>
@@ -68,6 +67,13 @@
             });
         })
         .catch(error => console.error('Ошибка при загрузке данных:', error));
+    const yearSelect = document.getElementById('year');
+    for (let year = 1900; year <= 2024; year++) {
+        const option = document.createElement('option');
+        option.value = year;
+        option.textContent = year;
+        yearSelect.appendChild(option);
+    }
 </script>
 
 </body>
