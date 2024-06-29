@@ -36,11 +36,13 @@ function handleModelInput(input) {
     const brandInput = document.getElementById('brand').value;
     const selectedBrand = carData.find(brand => brand.name.toLowerCase() === brandInput.toLowerCase());
 
-    if (!selectedBrand || !input) {
+    if (!selectedBrand) {
         return;
     }
 
-    const filteredModels = selectedBrand.models.filter(model => model.name.toLowerCase().includes(input.toLowerCase()));
+    const filteredModels = selectedBrand.models.filter(model =>
+        model.name.toLowerCase().includes(input.toLowerCase())
+    );
 
     filteredModels.forEach(model => {
         const option = document.createElement('div');
