@@ -39,7 +39,6 @@ function setupEventHandlers() {
         console.error('Элемент с id="year" не найден на странице.');
     }
 
-    // Добавляем обработчик клика для закрытия списка брендов
     document.addEventListener('click', function(event) {
         const brandAutocomplete = document.getElementById('brand-autocomplete');
         const brandInput = document.getElementById('brand');
@@ -49,7 +48,6 @@ function setupEventHandlers() {
         }
     });
 
-    // Добавляем обработчик клика для закрытия списка моделей
     document.addEventListener('click', function(event) {
         const modelAutocomplete = document.getElementById('model-autocomplete');
         const modelInput = document.getElementById('model');
@@ -59,7 +57,6 @@ function setupEventHandlers() {
         }
     });
 
-    // Добавляем обработчик клика для закрытия списка годов
     document.addEventListener('click', function(event) {
         const yearAutocomplete = document.getElementById('year-autocomplete');
         const yearInput = document.getElementById('year');
@@ -173,7 +170,6 @@ function populateYears(startYear, endYear) {
     yearSelect.innerHTML = '';
 
     const currentYear = new Date().getFullYear();
-
     for (let year = startYear; year <= endYear; year++) {
         const option = document.createElement('option');
         option.value = year;
