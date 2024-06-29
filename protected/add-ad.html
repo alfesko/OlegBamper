@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Добавить объявление</title>
+    <link rel="stylesheet" href="/public/styles.css">
+</head>
+<header class="header">
+    <div class="header-content">
+        <div class="contact-info">
+            <div class="working-hours">
+                <p>Время работы:</p>
+                <ul>
+                    <li>Понедельник - Пятница: 8:00 - 17:00</li>
+                    <li>Суббота - Воскресенье: 10:00 - 15:00</li>
+                </ul>
+            </div>
+            <div class="phones">
+                <p>Телефоны:</p>
+                <ul>
+                    <li>+375 (33) 638-83-83</li>
+                    <li>+375 (29) 265-57-52</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</header>
+<body>
+<h2>Добавить объявление</h2>
+<form action="/submit-ad" method="post">
+    <label for="brand">Марка:</label>
+    <input type="text" id="brand" name="brand" required>
+
+    <label for="model">Модель:</label>
+    <input type="text" id="model" name="model" required>
+
+    <label for="year">Год выпуска:</label>
+    <input type="text" id="year" name="year" required>
+
+    <label for="engineVolume">Объем:</label>
+    <input type="text" id="engineVolume" name="engineVolume" required>
+
+    <label for="description">Описание:</label>
+    <textarea id="description" name="description" required></textarea>
+
+    <label for="bodyType">Кузов:</label>
+    <select id="bodyType" name="bodyType" required>
+        <option value="Седан">Седан</option>
+        <option value="Универсал">Универсал</option>
+        <option value="хэтчбек">Хэтчбек</option>
+        <option value="внедорожник">Внедорожник</option>
+        <option value="минивэн">Минивэн</option>
+        <option value="купе">Купе</option>
+        <option value="лифтбек">Лифтбек</option>
+        <option value="пикап">Пикап</option>
+        <option value="кабриолет">Кабриолет</option>
+        <option value="фургон">Фургон</option>
+        <option value="грузовик">Грузовик</option>
+        <option value="бортовой">Бортовой</option>
+        <option value="тягач">Тягач</option>
+        <option value="автобус">Автобус</option>
+        <option value="прицеп">Прицеп</option>
+        <option value="полуприцеп">Полуприцеп</option>
+        <option value="погрузчик">Погрузчик</option>
+    </select>
+
+    <label for="transmission">Коробка:</label>
+    <select id="transmission" name="transmission" required>
+        <option value="АКПП">АКПП</option>
+        <option value="МКПП">МКПП</option>
+        <option value="РОБОТ">Робот</option>
+        <option value="ВАРИАТОР">Вариатор</option>
+    </select>
+
+    <button type="submit">Добавить</button>
+</form>
+</body>
+<div class="address-info">
+    <p>Адрес:</p>
+    <p>Мосты, ул. Вокзальная, д.15, к. 9, оф.2</p>
+</div>
+<div class="footer">
+    <p>© ИП Щука О.Е., УНП 590236855, 22.04.2004, shchuka1971@mail.ru</p>
+</div>
+<script src="/scripts.js"></script>
+</html>

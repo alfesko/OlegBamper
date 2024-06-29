@@ -101,6 +101,15 @@ app.get('/login', (req, res) => {
     res.sendFile(path.join(__dirname, 'login.html'));
 });
 
+app.get('/add-ad', (req, res) => {
+    res.sendFile(path.join(__dirname, 'protected', 'add-ad.html'));
+});
+
+app.post('/submit-ad', (req, res) => {
+    const { brand, model, year, engineVolume, description, bodyType, transmission } = req.body;
+    res.send('Объявление успешно добавлено!');
+});
+
 app.listen(PORT, () => {
     console.log(`Сервер запущен на порту ${PORT}`);
 });

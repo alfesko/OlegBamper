@@ -203,3 +203,16 @@ document.addEventListener('mousemove', (event) => {
     document.body.style.setProperty('--bg-x', `${x}px`);
     document.body.style.setProperty('--bg-y', `${y}px`);
 });
+document.addEventListener('DOMContentLoaded', function () {
+    fetch('/auth-status')
+        .then(response => response.json())
+        .then(data => {
+            const addAdButton = document.getElementById('add-ad-button');
+            if (data.loggedIn) {
+                addAdButton.style.display = 'block';
+            } else {
+                addAdButton.style.display = 'none';
+            }
+        })
+        .catch(error => console.error('Ошибка при проверке статуса авторизации:', error));
+});
