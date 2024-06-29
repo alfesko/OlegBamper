@@ -4,8 +4,31 @@ fetch('/cars.json')
     .then(response => response.json())
     .then(data => {
         carData = data;
+        setupEventHandlers();
     })
     .catch(error => console.error('Ошибка при загрузке данных:', error));
+
+function setupEventHandlers() {
+    const brandInput = document.getElementById('brand');
+    if (brandInput) {
+        brandInput.addEventListener('focus', function() {
+            const brandValue = this.value.toLowerCase();
+            handleBrandInput(brandValue);
+        });
+    } else {
+        console.error('Элемент с id="brand" не найден на странице.');
+    }
+
+    const modelInput = document.getElementById('model');
+    if (modelInput) {
+        modelInput.addEventListener('focus', function() {
+            const modelValue = this.value.toLowerCase();
+            handleModelInput(modelValue);
+        });
+    } else {
+        console.error('Элемент с id="model" не найден на странице.');
+    }
+}
 
 function handleBrandInput(input) {
     const autocompleteContainer = document.getElementById('brand-autocomplete');
@@ -15,7 +38,7 @@ function handleBrandInput(input) {
         return;
     }
 
-    const filteredBrands = carData.filter(brand => brand.name.toLowerCase().includes(input.toLowerCase()));
+    const filteredBrands = carData.filter(brand => brand.name.toLowerCase().includes(input));
 
     filteredBrands.forEach(brand => {
         const option = document.createElement('div');
@@ -41,7 +64,7 @@ function handleModelInput(input) {
     }
 
     const filteredModels = selectedBrand.models.filter(model =>
-        model.name.toLowerCase().includes(input.toLowerCase())
+        model.name.toLowerCase().includes(input)
     );
 
     filteredModels.forEach(model => {
@@ -54,38 +77,6 @@ function handleModelInput(input) {
         };
         autocompleteContainer.appendChild(option);
     });
-}
-
-function handleYearInput(input) {
-    const autocompleteContainer = document.getElementById('year-autocomplete');
-    autocompleteContainer.innerHTML = '';
-
-    const brandInput = document.getElementById('brand').value;
-    const modelInput = document.getElementById('model').value;
-
-    if (!brandInput || !modelInput || !input) {
-        return;
-    }
-
-    const selectedBrand = carData.find(brand => brand.name.toLowerCase() === brandInput.toLowerCase());
-    const selectedModel = selectedBrand.models.find(model => model.name.toLowerCase() === modelInput.toLowerCase());
-
-    if (!selectedModel) {
-        return;
-    }
-
-    const startYear = selectedModel['year-from'];
-    const currentYear = new Date().getFullYear();
-
-    for (let year = startYear; year <= currentYear; year++) {
-        const option = document.createElement('div');
-        option.textContent = year;
-        option.onclick = function() {
-            document.getElementById('year').value = year;
-            autocompleteContainer.innerHTML = '';
-        };
-        autocompleteContainer.appendChild(option);
-    }
 }
 
 function populateModels(brandId) {
