@@ -28,6 +28,24 @@ function setupEventHandlers() {
     } else {
         console.error('Элемент с id="model" не найден на странице.');
     }
+
+    document.addEventListener('click', function(event) {
+        const modelAutocomplete = document.getElementById('model-autocomplete');
+        const modelInput = document.getElementById('model');
+
+        if (event.target !== modelInput && !modelAutocomplete.contains(event.target)) {
+            modelAutocomplete.innerHTML = ''; // Закрываем список моделей
+        }
+    });
+
+    document.addEventListener('click', function(event) {
+        const brandAutocomplete = document.getElementById('brand-autocomplete');
+        const brandInput = document.getElementById('brand');
+
+        if (event.target !== brandInput && !brandAutocomplete.contains(event.target)) {
+            brandAutocomplete.innerHTML = ''; // Закрываем список брендов
+        }
+    });
 }
 
 function handleBrandInput(input) {
@@ -45,7 +63,7 @@ function handleBrandInput(input) {
         option.textContent = brand.name;
         option.onclick = function() {
             document.getElementById('brand').value = brand.name;
-            populateModels(brand.id);
+            populateModels(brand.id); // Здесь вызывается функция для заполнения моделей по выбранной марке
             autocompleteContainer.innerHTML = '';
         };
         autocompleteContainer.appendChild(option);
