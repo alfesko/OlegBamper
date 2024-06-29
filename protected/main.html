@@ -100,8 +100,13 @@
     }
 
     document.addEventListener('DOMContentLoaded', checkAuthStatus);
-</script>
 
-<script src="/scripts.js"></script>
+    document.addEventListener('mousemove', (event) => {
+        const x = (event.clientX / window.innerWidth - 0.5) * 30;
+        const y = (event.clientY / window.innerHeight - 0.5) * 30;
+        document.body.style.setProperty('--bg-x', `${x}px`);
+        document.body.style.setProperty('--bg-y', `${y}px`);
+    });
+</script>
 </body>
 </html>

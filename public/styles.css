@@ -7,6 +7,8 @@ body {
     justify-content: flex-start;
     height: 100vh;
     margin: 0;
+    --bg-x: 0px;
+    --bg-y: 0px;
 }
 body::before {
     content: "";
@@ -19,6 +21,8 @@ body::before {
     background-size: cover;
     filter: blur(3px);
     z-index: -1;
+    transform: translate(var(--bg-x), var(--bg-y));
+    transition: transform 0.1s ease-out;
 }
 .container {
     background-color: #fff;
