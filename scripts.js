@@ -203,6 +203,7 @@ document.addEventListener('mousemove', (event) => {
     document.body.style.setProperty('--bg-x', `${x}px`);
     document.body.style.setProperty('--bg-y', `${y}px`);
 });
+
 document.addEventListener('DOMContentLoaded', function () {
     fetch('/auth-status')
         .then(response => response.json())
