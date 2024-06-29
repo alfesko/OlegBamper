@@ -11,7 +11,7 @@ fetch('/cars.json')
 function setupEventHandlers() {
     const brandInput = document.getElementById('brand');
     if (brandInput) {
-        brandInput.addEventListener('focus', function() {
+        brandInput.addEventListener('input', function() {
             const brandValue = this.value.toLowerCase();
             handleBrandInput(brandValue);
         });
@@ -21,7 +21,7 @@ function setupEventHandlers() {
 
     const modelInput = document.getElementById('model');
     if (modelInput) {
-        modelInput.addEventListener('focus', function() {
+        modelInput.addEventListener('input', function() {
             const modelValue = this.value.toLowerCase();
             handleModelInput(modelValue);
         });
@@ -29,21 +29,43 @@ function setupEventHandlers() {
         console.error('Элемент с id="model" не найден на странице.');
     }
 
-    document.addEventListener('click', function(event) {
-        const modelAutocomplete = document.getElementById('model-autocomplete');
-        const modelInput = document.getElementById('model');
+    const yearInput = document.getElementById('year');
+    if (yearInput) {
+        yearInput.addEventListener('input', function() {
+            const yearValue = this.value.toLowerCase();
+            handleYearInput(yearValue);
+        });
+    } else {
+        console.error('Элемент с id="year" не найден на странице.');
+    }
 
-        if (event.target !== modelInput && !modelAutocomplete.contains(event.target)) {
-            modelAutocomplete.innerHTML = ''; // Закрываем список моделей
-        }
-    });
-
+    // Добавляем обработчик клика для закрытия списка брендов
     document.addEventListener('click', function(event) {
         const brandAutocomplete = document.getElementById('brand-autocomplete');
         const brandInput = document.getElementById('brand');
 
         if (event.target !== brandInput && !brandAutocomplete.contains(event.target)) {
-            brandAutocomplete.innerHTML = ''; // Закрываем список брендов
+            brandAutocomplete.innerHTML = '';
+        }
+    });
+
+    // Добавляем обработчик клика для закрытия списка моделей
+    document.addEventListener('click', function(event) {
+        const modelAutocomplete = document.getElementById('model-autocomplete');
+        const modelInput = document.getElementById('model');
+
+        if (event.target !== modelInput && !modelAutocomplete.contains(event.target)) {
+            modelAutocomplete.innerHTML = '';
+        }
+    });
+
+    // Добавляем обработчик клика для закрытия списка годов
+    document.addEventListener('click', function(event) {
+        const yearAutocomplete = document.getElementById('year-autocomplete');
+        const yearInput = document.getElementById('year');
+
+        if (event.target !== yearInput && !yearAutocomplete.contains(event.target)) {
+            yearAutocomplete.innerHTML = '';
         }
     });
 }
@@ -63,7 +85,7 @@ function handleBrandInput(input) {
         option.textContent = brand.name;
         option.onclick = function() {
             document.getElementById('brand').value = brand.name;
-            populateModels(brand.id); // Здесь вызывается функция для заполнения моделей по выбранной марке
+            populateModels(brand.id);
             autocompleteContainer.innerHTML = '';
         };
         autocompleteContainer.appendChild(option);
@@ -90,11 +112,43 @@ function handleModelInput(input) {
         option.textContent = model.name;
         option.onclick = function() {
             document.getElementById('model').value = model.name;
-            populateYears(model['year-from']);
+            populateYears(model['year-from'], model['year-to']);
             autocompleteContainer.innerHTML = '';
         };
         autocompleteContainer.appendChild(option);
     });
+}
+
+function handleYearInput(input) {
+    const autocompleteContainer = document.getElementById('year-autocomplete');
+    autocompleteContainer.innerHTML = '';
+
+    const brandInput = document.getElementById('brand').value;
+    const modelInput = document.getElementById('model').value;
+
+    if (!brandInput || !modelInput || !input) {
+        return;
+    }
+
+    const selectedBrand = carData.find(brand => brand.name.toLowerCase() === brandInput.toLowerCase());
+    const selectedModel = selectedBrand.models.find(model => model.name.toLowerCase() === modelInput.toLowerCase());
+
+    if (!selectedModel) {
+        return;
+    }
+
+    const startYear = selectedModel['year-from'];
+    const endYear = selectedModel['year-to'];
+
+    for (let year = startYear; year <= endYear; year++) {
+        const option = document.createElement('div');
+        option.textContent = year;
+        option.onclick = function() {
+            document.getElementById('year').value = year;
+            autocompleteContainer.innerHTML = '';
+        };
+        autocompleteContainer.appendChild(option);
+    }
 }
 
 function populateModels(brandId) {
@@ -111,18 +165,16 @@ function populateModels(brandId) {
         modelSelect.appendChild(option);
     });
 
-    populateYears(selectedBrandObj.models[0]['year-from']);
+    populateYears(selectedBrandObj.models[0]['year-from'], selectedBrandObj.models[0]['year-to']);
 }
 
-function populateYears(startYear) {
+function populateYears(startYear, endYear) {
     const yearSelect = document.getElementById('year');
     yearSelect.innerHTML = '';
 
     const currentYear = new Date().getFullYear();
 
-    startYear = startYear || 1908;
-
-    for (let year = startYear; year <= currentYear; year++) {
+    for (let year = startYear; year <= endYear; year++) {
         const option = document.createElement('option');
         option.value = year;
         option.textContent = year;
