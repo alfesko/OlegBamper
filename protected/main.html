@@ -90,33 +90,6 @@
     <p>© ИП Щука О.Е., УНП 590236855, 22.04.2004, shchuka1971@mail.ru</p>
 </div>
 
-<script>
-    async function checkAuthStatus() {
-        try {
-            const response = await fetch('/auth-status');
-            const data = await response.json();
-            const authButton = document.getElementById('auth-button');
-            if (data.loggedIn) {
-                authButton.textContent = 'Выйти';
-                authButton.onclick = () => location.href = '/logout';
-            } else {
-                authButton.textContent = 'Войти';
-                authButton.onclick = () => location.href = '/login';
-            }
-        } catch (err) {
-            console.error('Ошибка при проверке статуса авторизации:', err);
-        }
-    }
-
-    document.addEventListener('DOMContentLoaded', checkAuthStatus);
-
-    document.addEventListener('mousemove', (event) => {
-        const x = (event.clientX / window.innerWidth - 0.5) * 15;
-        const y = (event.clientY / window.innerHeight - 0.5) * 15;
-        document.body.style.setProperty('--bg-x', `${x}px`);
-        document.body.style.setProperty('--bg-y', `${y}px`);
-    });
-</script>
 <script src="/scripts.js"></script>
 </body>
 </html>
