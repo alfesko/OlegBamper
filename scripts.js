@@ -207,20 +207,15 @@ document.addEventListener('mousemove', (event) => {
 document.addEventListener('DOMContentLoaded', function () {
     const addAdButton = document.getElementById('add-ad-button');
 
-    // Проверяем статус авторизации при загрузке страницы
     fetch('/auth-status')
         .then(response => response.json())
         .then(data => {
-            // Если пользователь авторизован, отображаем кнопку
             if (data.loggedIn) {
                 addAdButton.style.display = 'block';
             } else {
-                // Если пользователь не авторизован, оставляем кнопку видимой
                 addAdButton.style.display = 'block';
 
-                // Назначаем обработчик клика на кнопку
                 addAdButton.addEventListener('click', function() {
-                    // Перенаправляем на страницу авторизации
                     window.location.href = '/login';
                 });
             }

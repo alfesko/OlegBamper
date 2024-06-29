@@ -27,9 +27,9 @@
     </div>
 </header>
 <body>
-<div class="container">
+<div class="container-add">
     <h2>Добавить объявление</h2>
-    <form action="/search" method="get">
+    <form action="/announcement" method="get">
         <label for="brand">Марка:</label>
         <input type="text" id="brand" name="brand" autocomplete="off" oninput="handleBrandInput(this.value)">
         <div id="brand-autocomplete" class="autocomplete-items"></div>
@@ -74,8 +74,8 @@
         <input type="text" id="description" name="description" required>
         <label for="partNumber">Номер запчасти:</label>
         <input type="text" id="partNumber" name="partNumber" required>
-        <br></br>
-        <button type="submit">Поиск</button>
+        <br>
+        <button type="submit">Добавить</button>
     </form>
 </div>
 <div class="footer">
