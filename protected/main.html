@@ -9,6 +9,12 @@
 </head>
 <body>
 <header class="header">
+    <div class="auth-buttons">
+        <button id="auth-button" class="auth-btn">Загрузка...</button>
+        <button id="add-ad-button" class="add-ad-btn" onclick="redirectToLoginOrAddAd()">
+            Добавить объявление
+        </button>
+    </div>
     <div class="header-content">
         <div class="contact-info">
             <div class="working-hours">
@@ -31,7 +37,7 @@
 
 <div class="container">
     <h2>Выбор запчастей</h2>
-    <form action="/search" method="get">
+    <form action="/search" method="get" class="search-form">
         <label for="brand">Марка:</label>
         <input type="text" id="brand" name="brand" autocomplete="off" oninput="handleBrandInput(this.value)">
         <div id="brand-autocomplete" class="autocomplete-items"></div>
@@ -80,12 +86,6 @@
     </form>
 </div>
 
-<div class="auth-buttons">
-    <button id="auth-button" class="auth-btn">Загрузка...</button>
-    <button id="add-ad-button" class="add-ad-btn" style="display: none;" onclick="window.location.href='/add-ad'">
-        Добавить объявление
-    </button>
-</div>
 <div class="footer">
     <div class="address-info">
         <p>Адрес:</p>
