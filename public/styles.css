@@ -62,9 +62,11 @@ body::before {
     justify-content: center;
     flex-grow: 1;
 }
+
 .add-ad-btn {
     margin-left: auto;
 }
+
 .header .contact-info {
     display: flex;
     align-items: center;
@@ -88,6 +90,7 @@ body::before {
     list-style-type: none;
     text-align: left;
 }
+
 .container-add {
     background-color: #fff;
     padding: 10px;
@@ -99,11 +102,13 @@ body::before {
     margin-top: 20px;
     margin-bottom: 20px;
 }
+
 .announcement-form {
     display: flex;
     flex-direction: column;
     align-items: center;
 }
+
 .container {
     background-color: #fff;
     padding: 10px;

@@ -2,7 +2,7 @@ const express = require('express');
 const session = require('express-session');
 const path = require('path');
 const bcrypt = require('bcrypt');
-const { Pool } = require('pg');
+const {Pool} = require('pg');
 const pgSession = require('connect-pg-simple')(session);
 const dbConfig = require('./db-config');
 
@@ -19,10 +19,10 @@ app.use(session({
     secret: 'your_secret_key',
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false }
+    cookie: {secure: false}
 }));
 
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({extended: true}));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(__dirname));
 
@@ -44,7 +44,7 @@ async function addUser(username, password) {
 }
 
 app.post('/register', (req, res) => {
-    const { username, password } = req.body;
+    const {username, password} = req.body;
     addUser(username, password)
         .then(() => {
             res.send('Пользователь успешно зарегистрирован!');
@@ -55,7 +55,7 @@ app.post('/register', (req, res) => {
 });
 
 app.post('/login', async (req, res) => {
-    const { username, password } = req.body;
+    const {username, password} = req.body;
     try {
         const client = await pool.connect();
         const result = await client.query('SELECT * FROM users WHERE username = $1', [username]);
@@ -90,7 +90,7 @@ app.get('/logout', (req, res) => {
 });
 
 app.get('/auth-status', (req, res) => {
-    res.json({ loggedIn: !!req.session.loggedIn });
+    res.json({loggedIn: !!req.session.loggedIn});
 });
 
 app.get('/', (req, res) => {
@@ -106,7 +106,7 @@ app.get('/add-ad', (req, res) => {
 });
 
 app.post('/submit-ad', (req, res) => {
-    const { brand, model, year, engineVolume, description, bodyType, transmission } = req.body;
+    const {brand, model, year, engineVolume, description, bodyType, transmission} = req.body;
     res.send('Объявление успешно добавлено!');
 });
 
