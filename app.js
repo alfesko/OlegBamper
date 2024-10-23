@@ -5,7 +5,8 @@ const bcrypt = require('bcrypt');
 const {Pool} = require('pg');
 const pgSession = require('connect-pg-simple')(session);
 const dbConfig = require('./db-config');
-
+const multer = require('multer');
+const fs = require('fs');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -27,8 +28,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(__dirname));
 
 async function hashPassword(password) {
-    const hashedPassword = await bcrypt.hash(password, 10);
-    return hashedPassword;
+    return await bcrypt.hash(password, 10);
 }
 
 async function addUser(username, password) {
@@ -53,7 +53,42 @@ app.post('/register', (req, res) => {
             res.status(500).send('Ошибка при регистрации пользователя');
         });
 });
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        const dir = './uploads';
+        if (!fs.existsSync(dir)){
+            fs.mkdirSync(dir);
+        }
+        cb(null, dir);
+    },
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + path.extname(file.originalname));
+    }
+});
 
+const upload = multer({ storage: storage });
+
+// Маршрут для обработки объявления
+app.post('/announcement', upload.single('photo'), (req, res) => {
+    const { brand, year, model, engineVolume, transmission, bodyType } = req.body;
+    const photoPath = req.file.path;  // Путь к загруженному фото
+
+    // SQL запрос для вставки данных в базу данных
+    const query = `
+        INSERT INTO announcements (brand, year, model, engine_volume, transmission, body_type, photo)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
+    `;
+    const values = [brand, year, model, engineVolume, transmission, bodyType, photoPath];
+
+    pool.query(query, values, (err) => {
+        if (err) {
+            console.error('Ошибка при добавлении объявления в базу данных:', err);
+            return res.status(500).send('Ошибка сервера');
+        }
+        res.redirect('/');
+    });
+});
+app.use('/uploads', express.static('uploads'));
 app.post('/login', async (req, res) => {
     const {username, password} = req.body;
     try {
@@ -104,10 +139,23 @@ app.get('/login', (req, res) => {
 app.get('/add-ad', (req, res) => {
     res.sendFile(path.join(__dirname, 'protected', 'add-ad.html'));
 });
-
+app.get('/announcement', (req, res) => {
+    res.sendFile(path.join(__dirname, 'protected', 'add-ad.html'));  // Отображаем форму добавления объявления
+});
 app.post('/submit-ad', (req, res) => {
     const {brand, model, year, engineVolume, description, bodyType, transmission} = req.body;
     res.send('Объявление успешно добавлено!');
+});
+app.get('/api/announcements', async (req, res) => {
+    try {
+        const client = await pool.connect();
+        const result = await client.query('SELECT * FROM announcements');
+        client.release();
+        res.json(result.rows);  // Отправляем объявления в формате JSON
+    } catch (err) {
+        console.error('Ошибка при получении объявлений:', err);
+        res.status(500).send('Ошибка при получении объявлений');
+    }
 });
 
 app.listen(PORT, () => {

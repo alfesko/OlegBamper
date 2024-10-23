@@ -34,7 +34,9 @@
         </div>
     </div>
 </header>
-
+<h2>Объявления</h2>
+<div id="announcements" class="announcements">
+</div>
 <div class="container">
     <h2>Выбор запчастей</h2>
     <form action="/search" method="get" class="search-form">
@@ -85,7 +87,32 @@
         <button type="submit">Поиск</button>
     </form>
 </div>
+<script>
+    window.onload = function() {
+        fetch('/api/announcements')
+            .then(response => response.json())
+            .then(data => {
+                const announcementsContainer = document.getElementById('announcements');
+                announcementsContainer.innerHTML = '';  // Очищаем контейнер
 
+                data.forEach(announcement => {
+                    const announcementElement = document.createElement('div');
+                    announcementElement.classList.add('announcement-item');
+
+                    announcementElement.innerHTML = `
+                    <h3>${announcement.brand} - ${announcement.model}</h3>
+                    <p>Год: ${announcement.year}</p>
+                    <p>Объем: ${announcement.engine_volume}</p>
+                    <p>Коробка: ${announcement.transmission}</p>
+                    <p>Кузов: ${announcement.body_type}</p>
+                    <img src="${announcement.photo}" alt="Фото объявления">
+                `;
+                    announcementsContainer.appendChild(announcementElement);
+                });
+            })
+            .catch(error => console.error('Ошибка при загрузке объявлений:', error));
+    };
+</script>
 <div class="footer">
     <div class="address-info">
         <p>Адрес:</p>

@@ -29,7 +29,7 @@
 <body>
 <div class="container-add">
     <h2>Добавить объявление</h2>
-    <form action="/announcement" method="get">
+    <form action="/announcement" method="POST" enctype="multipart/form-data">
         <label for="brand">Марка:</label>
         <input type="text" id="brand" name="brand" autocomplete="off" oninput="handleBrandInput(this.value)">
         <div id="brand-autocomplete" class="autocomplete-items"></div>
@@ -74,6 +74,8 @@
         <input type="text" id="description" name="description" required>
         <label for="partNumber">Номер запчасти:</label>
         <input type="text" id="partNumber" name="partNumber" required>
+        <label for="photo">Фото объявления:</label>
+        <input type="file" id="photo" name="photo" accept="image/*" required>
         <br>
         <button type="submit">Добавить</button>
     </form>
