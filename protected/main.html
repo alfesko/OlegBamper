@@ -69,19 +69,26 @@
                 <option value="Универсал">Универсал</option>
                 <option value="хэтчбек">Хэтчбек</option>
                 <option value="внедорожник">Внедорожник</option>
+                <!-- Дополнительные варианты кузова -->
             </select>
-
-            <label for="article">Артикул объявления:</label>
-            <input type="text" id="article" name="article" required>
             <label for="fuelType">Тип топлива:</label>
-            <select id="fuelType" name="fuelType" required>
+            <select id="fuelType" name="fuelType" required onchange="updateFuelSubtype()">
+                <option value="" disabled selected>Выберите тип топлива</option>
                 <option value="бензин">Бензин</option>
                 <option value="дизель">Дизель</option>
                 <option value="электро">Электро</option>
                 <option value="гибрид">Гибрид</option>
             </select>
+            <label for="fuelSubtype" id="fuelSubtypeLabel" style="display:none;">Подтип топлива:</label>
+            <select id="fuelSubtype" name="fuelSubtype" style="display:none;">
+                <!-- Подтипы будут добавляться динамически -->
+            </select>
+            <label for="article">Артикул объявления:</label>
+            <input type="text" id="article" name="article" required>
+
             <label for="partNumber">Номер запчасти:</label>
             <input type="text" id="partNumber" name="partNumber" required>
+
             <button type="submit">Поиск</button>
         </form>
     </div>
@@ -100,6 +107,50 @@
 </div>
 
 <script>
+    function updateFuelSubtype() {
+        const fuelType = document.getElementById('fuelType').value;
+        const fuelSubtypeSelect = document.getElementById('fuelSubtype');
+        const fuelSubtypeLabel = document.getElementById('fuelSubtypeLabel');
+
+        // Очищаем предыдущие подтипы
+        fuelSubtypeSelect.innerHTML = '';
+
+        if (fuelType === 'бензин') {
+            fuelSubtypeLabel.style.display = 'block';
+            fuelSubtypeSelect.style.display = 'block';
+            const benzineSubtypes = [
+                "EcoBoost", "FSI", "GDI", "HPi", "i", "i-VTEC",
+                "IDE", "JTS", "Kompr", "MPI", "TCE", "TFSI",
+                "THP", "Ti", "TSI", "VTEC", "VTI", "VVT-i", "карб", "МОНО"
+            ];
+            benzineSubtypes.forEach(subtype => {
+                const option = document.createElement('option');
+                option.value = subtype;
+                option.textContent = subtype;
+                fuelSubtypeSelect.appendChild(option);
+            });
+        } else if (fuelType === 'дизель') {
+            fuelSubtypeLabel.style.display = 'block';
+            fuelSubtypeSelect.style.display = 'block';
+            const dieselSubtypes = [
+                "BiTDi", "CDI", "CDT", "CDTi", "CRD", "CRDi",
+                "CTDi", "D", "D-4D", "D-CAT", "D5", "DCi",
+                "DDiS", "Di", "DiD", "DT", "DTH", "DTi", "DTL",
+                "HDi", "HPi", "HPT", "i-CTDi", "i-DTEC", "JTD",
+                "SDi", "TD", "TDCi", "TDDi", "TDI", "TDi PD",
+                "TiD", "VCDi", "XDI"
+            ];
+            dieselSubtypes.forEach(subtype => {
+                const option = document.createElement('option');
+                option.value = subtype;
+                option.textContent = subtype;
+                fuelSubtypeSelect.appendChild(option);
+            });
+        } else {
+            fuelSubtypeLabel.style.display = 'none';
+            fuelSubtypeSelect.style.display = 'none';
+        }
+    }
     window.onload = function() {
         fetch('/api/announcements')
             .then(response => response.json())

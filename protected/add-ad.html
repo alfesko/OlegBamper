@@ -28,66 +28,70 @@
 </header>
 <body>
 <div class="container">
-    <div class="container-add">
-        <h2>Добавить объявление</h2>
-        <form action="/announcement" method="POST" enctype="multipart/form-data">
-            <label for="brand">Марка:</label>
-            <input type="text" id="brand" name="brand" autocomplete="off" oninput="handleBrandInput(this.value)">
-            <div id="brand-autocomplete" class="autocomplete-items"></div>
-            <label for="year">Год выпуска:</label>
-            <input type="text" id="year" name="year" autocomplete="off" oninput="handleYearInput(this.value)">
-            <div id="year-autocomplete" class="autocomplete-items"></div>
-            <label for="model">Модель:</label>
-            <input type="text" id="model" name="model" required autocomplete="off" oninput="handleModelInput(this.value)">
-            <div id="model-autocomplete" class="autocomplete-items"></div>
-            <label for="engineVolume">Объем:</label>
-            <input type="text" id="engineVolume" name="engineVolume" required>
-            <div class="form-row">
-                <label for="transmission">Коробка:</label>
-                <select id="transmission" name="transmission" required>
-                    <option value="АКПП">АКПП</option>
-                    <option value="МКПП">МКПП</option>
-                    <option value="РОБОТ">Робот</option>
-                    <option value="ВАРИАТОР">Вариатор</option>
-                </select>
-                <label for="fuelType">Тип топлива:</label>
-                <select id="fuelType" name="fuelType" required>
-                    <option value="бензин">Бензин</option>
-                    <option value="дизель">Дизель</option>
-                    <option value="электро">Электро</option>
-                    <option value="гибрид">Гибрид</option>
-                </select>
-                <label for="bodyType">Кузов:</label>
-                <select id="bodyType" name="bodyType" required>
-                    <option value="Седан">Седан</option>
-                    <option value="Универсал">Универсал</option>
-                    <option value="хэтчбек">Хэтчбек</option>
-                    <option value="внедорожник">Внедорожник</option>
-                    <option value="минивэн">Минивэн</option>
-                    <option value="купе">Купе</option>
-                    <option value="лифтбек">Лифтбек</option>
-                    <option value="пикап">Пикап</option>
-                    <option value="кабриолет">Кабриолет</option>
-                    <option value="фургон">Фургон</option>
-                    <option value="грузовик">Грузовик</option>
-                    <option value="бортовой">Бортовой</option>
-                    <option value="тягач">Тягач</option>
-                    <option value="автобус">Автобус</option>
-                    <option value="прицеп">Прицеп</option>
-                    <option value="полуприцеп">Полуприцеп</option>
-                    <option value="погрузчик">Погрузчик</option>
-                </select>
-            </div>
-            <label for="description">Описание:</label>
-            <input type="text" id="description" name="description" required>
-            <label for="partNumber">Номер запчасти:</label>
-            <input type="text" id="partNumber" name="partNumber" required>
-            <label for="photo">Фото объявления:</label>
-            <input type="file" id="photo" name="photo" accept="image/*" required>
-            <br>
-            <button type="submit">Добавить</button>
-        </form>
-    </div>
+<div class="container-add">
+    <h2>Добавить объявление</h2>
+    <form action="/announcement" method="POST" enctype="multipart/form-data">
+        <label for="brand">Марка:</label>
+        <input type="text" id="brand" name="brand" autocomplete="off" oninput="handleBrandInput(this.value)">
+        <div id="brand-autocomplete" class="autocomplete-items"></div>
+        <label for="year">Год выпуска:</label>
+        <input type="text" id="year" name="year" autocomplete="off" oninput="handleYearInput(this.value)">
+        <div id="year-autocomplete" class="autocomplete-items"></div>
+        <label for="model">Модель:</label>
+        <input type="text" id="model" name="model" required autocomplete="off" oninput="handleModelInput(this.value)">
+        <div id="model-autocomplete" class="autocomplete-items"></div>
+        <label for="engineVolume">Объем:</label>
+        <input type="text" id="engineVolume" name="engineVolume" required>
+        <div class="form-row">
+            <label for="transmission">Коробка:</label>
+            <select id="transmission" name="transmission" required>
+                <option value="АКПП">АКПП</option>
+                <option value="МКПП">МКПП</option>
+                <option value="РОБОТ">Робот</option>
+                <option value="ВАРИАТОР">Вариатор</option>
+            </select>
+            <label for="bodyType">Кузов:</label>
+            <select id="bodyType" name="bodyType" required>
+                <option value="Седан">Седан</option>
+                <option value="Универсал">Универсал</option>
+                <option value="хэтчбек">Хэтчбек</option>
+                <option value="внедорожник">Внедорожник</option>
+                <option value="минивэн">Минивэн</option>
+                <option value="купе">Купе</option>
+                <option value="лифтбек">Лифтбек</option>
+                <option value="пикап">Пикап</option>
+                <option value="кабриолет">Кабриолет</option>
+                <option value="фургон">Фургон</option>
+                <option value="грузовик">Грузовик</option>
+                <option value="бортовой">Бортовой</option>
+                <option value="тягач">Тягач</option>
+                <option value="автобус">Автобус</option>
+                <option value="прицеп">Прицеп</option>
+                <option value="полуприцеп">Полуприцеп</option>
+                <option value="погрузчик">Погрузчик</option>
+            </select>
+        </div>
+        <select id="fuelType" name="fuelType" required onchange="updateFuelSubtype()">
+            <option value="" disabled selected>Выберите тип топлива</option>
+            <option value="бензин">Бензин</option>
+            <option value="дизель">Дизель</option>
+            <option value="электро">Электро</option>
+            <option value="гибрид">Гибрид</option>
+        </select>
+        <label for="fuelSubtype" id="fuelSubtypeLabel" style="display:none;">Подтип топлива:</label>
+        <select id="fuelSubtype" name="fuelSubtype" style="display:none;">
+            <!-- Подтипы будут добавляться динамически -->
+        </select>
+        <label for="description">Описание:</label>
+        <input type="text" id="description" name="description" required>
+        <label for="partNumber">Номер запчасти:</label>
+        <input type="text" id="partNumber" name="partNumber" required>
+        <label for="photo">Фото объявления:</label>
+        <input type="file" id="photo" name="photo" accept="image/*" required>
+        <br>
+        <button type="submit">Добавить</button>
+    </form>
+</div>
 </div>
 <div class="footer">
     <div class="address-info">
@@ -96,6 +100,52 @@
     </div>
     <p>© ИП Щука О.Е., УНП 590236855, 22.04.2004, shchuka1971@mail.ru</p>
 </div>
+<script>
+    function updateFuelSubtype() {
+        const fuelType = document.getElementById('fuelType').value;
+        const fuelSubtypeSelect = document.getElementById('fuelSubtype');
+        const fuelSubtypeLabel = document.getElementById('fuelSubtypeLabel');
+
+        // Очищаем предыдущие подтипы
+        fuelSubtypeSelect.innerHTML = '';
+
+        if (fuelType === 'бензин') {
+            fuelSubtypeLabel.style.display = 'block';
+            fuelSubtypeSelect.style.display = 'block';
+            const benzineSubtypes = [
+                "EcoBoost", "FSI", "GDI", "HPi", "i", "i-VTEC",
+                "IDE", "JTS", "Kompr", "MPI", "TCE", "TFSI",
+                "THP", "Ti", "TSI", "VTEC", "VTI", "VVT-i", "карб", "МОНО"
+            ];
+            benzineSubtypes.forEach(subtype => {
+                const option = document.createElement('option');
+                option.value = subtype;
+                option.textContent = subtype;
+                fuelSubtypeSelect.appendChild(option);
+            });
+        } else if (fuelType === 'дизель') {
+            fuelSubtypeLabel.style.display = 'block';
+            fuelSubtypeSelect.style.display = 'block';
+            const dieselSubtypes = [
+                "BiTDi", "CDI", "CDT", "CDTi", "CRD", "CRDi",
+                "CTDi", "D", "D-4D", "D-CAT", "D5", "DCi",
+                "DDiS", "Di", "DiD", "DT", "DTH", "DTi", "DTL",
+                "HDi", "HPi", "HPT", "i-CTDi", "i-DTEC", "JTD",
+                "SDi", "TD", "TDCi", "TDDi", "TDI", "TDi PD",
+                "TiD", "VCDi", "XDI"
+            ];
+            dieselSubtypes.forEach(subtype => {
+                const option = document.createElement('option');
+                option.value = subtype;
+                option.textContent = subtype;
+                fuelSubtypeSelect.appendChild(option);
+            });
+        } else {
+            fuelSubtypeLabel.style.display = 'none';
+            fuelSubtypeSelect.style.display = 'none';
+        }
+    }
+</script>
 <script src="/scripts.js"></script>
 </body>
 </html>
