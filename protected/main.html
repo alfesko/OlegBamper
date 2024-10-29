@@ -35,23 +35,26 @@
     </div>
 </header>
 <h2>Объявления</h2>
-<div id="announcements" class="announcements">
-</div>
-<div class="container">
-    <h2>Выбор запчастей</h2>
-    <form action="/search" method="get" class="search-form">
-        <label for="brand">Марка:</label>
-        <input type="text" id="brand" name="brand" autocomplete="off" oninput="handleBrandInput(this.value)">
-        <div id="brand-autocomplete" class="autocomplete-items"></div>
-        <label for="year">Год выпуска:</label>
-        <input type="text" id="year" name="year" autocomplete="off" oninput="handleYearInput(this.value)">
-        <div id="year-autocomplete" class="autocomplete-items"></div>
-        <label for="model">Модель:</label>
-        <input type="text" id="model" name="model" required autocomplete="off" oninput="handleModelInput(this.value)">
-        <div id="model-autocomplete" class="autocomplete-items"></div>
-        <label for="engineVolume">Объем:</label>
-        <input type="text" id="engineVolume" name="engineVolume" required>
-        <div class="form-row">
+
+<div class="main-content">
+    <div class="container">
+        <h2>Выбор запчастей</h2>
+        <form action="/search" method="get" class="search-form">
+            <label for="brand">Марка:</label>
+            <input type="text" id="brand" name="brand" autocomplete="off" oninput="handleBrandInput(this.value)">
+            <div id="brand-autocomplete" class="autocomplete-items"></div>
+
+            <label for="year">Год выпуска:</label>
+            <input type="text" id="year" name="year" autocomplete="off" oninput="handleYearInput(this.value)">
+            <div id="year-autocomplete" class="autocomplete-items"></div>
+
+            <label for="model">Модель:</label>
+            <input type="text" id="model" name="model" required autocomplete="off" oninput="handleModelInput(this.value)">
+            <div id="model-autocomplete" class="autocomplete-items"></div>
+
+            <label for="engineVolume">Объем:</label>
+            <input type="text" id="engineVolume" name="engineVolume" required>
+
             <label for="transmission">Коробка:</label>
             <select id="transmission" name="transmission" required>
                 <option value="АКПП">АКПП</option>
@@ -59,60 +62,31 @@
                 <option value="РОБОТ">Робот</option>
                 <option value="ВАРИАТОР">Вариатор</option>
             </select>
+
             <label for="bodyType">Кузов:</label>
             <select id="bodyType" name="bodyType" required>
                 <option value="Седан">Седан</option>
                 <option value="Универсал">Универсал</option>
                 <option value="хэтчбек">Хэтчбек</option>
                 <option value="внедорожник">Внедорожник</option>
-                <option value="минивэн">Минивэн</option>
-                <option value="купе">Купе</option>
-                <option value="лифтбек">Лифтбек</option>
-                <option value="пикап">Пикап</option>
-                <option value="кабриолет">Кабриолет</option>
-                <option value="фургон">Фургон</option>
-                <option value="грузовик">Грузовик</option>
-                <option value="бортовой">Бортовой</option>
-                <option value="тягач">Тягач</option>
-                <option value="автобус">Автобус</option>
-                <option value="прицеп">Прицеп</option>
-                <option value="полуприцеп">Полуприцеп</option>
-                <option value="погрузчик">Погрузчик</option>
+                <!-- Дополнительные варианты кузова -->
             </select>
-        </div>
-        <label for="article">Артикул объявления:</label>
-        <input type="text" id="article" name="article" required>
-        <label for="partNumber">Номер запчасти:</label>
-        <input type="text" id="partNumber" name="partNumber" required>
-        <button type="submit">Поиск</button>
-    </form>
+
+            <label for="article">Артикул объявления:</label>
+            <input type="text" id="article" name="article" required>
+
+            <label for="partNumber">Номер запчасти:</label>
+            <input type="text" id="partNumber" name="partNumber" required>
+
+            <button type="submit">Поиск</button>
+        </form>
+    </div>
+
+    <div id="announcements" class="announcements">
+        <!-- Объявления будут добавляться динамически через JavaScript -->
+    </div>
 </div>
-<script>
-    window.onload = function() {
-        fetch('/api/announcements')
-            .then(response => response.json())
-            .then(data => {
-                const announcementsContainer = document.getElementById('announcements');
-                announcementsContainer.innerHTML = '';  // Очищаем контейнер
 
-                data.forEach(announcement => {
-                    const announcementElement = document.createElement('div');
-                    announcementElement.classList.add('announcement-item');
-
-                    announcementElement.innerHTML = `
-                    <h3>${announcement.brand} - ${announcement.model}</h3>
-                    <p>Год: ${announcement.year}</p>
-                    <p>Объем: ${announcement.engine_volume}</p>
-                    <p>Коробка: ${announcement.transmission}</p>
-                    <p>Кузов: ${announcement.body_type}</p>
-                    <img src="${announcement.photo}" alt="Фото объявления">
-                `;
-                    announcementsContainer.appendChild(announcementElement);
-                });
-            })
-            .catch(error => console.error('Ошибка при загрузке объявлений:', error));
-    };
-</script>
 <div class="footer">
     <div class="address-info">
         <p>Адрес:</p>
@@ -120,6 +94,32 @@
     </div>
     <p>© ИП Щука О.Е., УНП 590236855, 22.04.2004, shchuka1971@mail.ru</p>
 </div>
+
+<script>
+    window.onload = function() {
+        fetch('/api/announcements')
+            .then(response => response.json())
+            .then(data => {
+                const announcementsContainer = document.getElementById('announcements');
+                announcementsContainer.innerHTML = '';
+
+                data.forEach(announcement => {
+                    const announcementElement = document.createElement('div');
+                    announcementElement.classList.add('announcement-item');
+                    announcementElement.innerHTML = `
+                        <h3>${announcement.brand} - ${announcement.model}</h3>
+                        <p>Год: ${announcement.year}</p>
+                        <p>Объем: ${announcement.engine_volume}</p>
+                        <p>Коробка: ${announcement.transmission}</p>
+                        <p>Кузов: ${announcement.body_type}</p>
+                        <img src="${announcement.photo}" alt="Фото объявления">
+                    `;
+                    announcementsContainer.appendChild(announcementElement);
+                });
+            })
+            .catch(error => console.error('Ошибка при загрузке объявлений:', error));
+    };
+</script>
 <script src="/scripts.js"></script>
 </body>
 </html>

@@ -68,7 +68,6 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-// Маршрут для обработки объявления
 app.post('/announcement', upload.single('photo'), (req, res) => {
     const { brand, year, model, engineVolume, transmission, bodyType } = req.body;
     const photoPath = req.file.path;  // Путь к загруженному фото
@@ -140,7 +139,7 @@ app.get('/add-ad', (req, res) => {
     res.sendFile(path.join(__dirname, 'protected', 'add-ad.html'));
 });
 app.get('/announcement', (req, res) => {
-    res.sendFile(path.join(__dirname, 'protected', 'add-ad.html'));  // Отображаем форму добавления объявления
+    res.sendFile(path.join(__dirname, 'protected', 'add-ad.html'));
 });
 app.post('/submit-ad', (req, res) => {
     const {brand, model, year, engineVolume, description, bodyType, transmission} = req.body;
@@ -151,7 +150,7 @@ app.get('/api/announcements', async (req, res) => {
         const client = await pool.connect();
         const result = await client.query('SELECT * FROM announcements');
         client.release();
-        res.json(result.rows);  // Отправляем объявления в формате JSON
+        res.json(result.rows);
     } catch (err) {
         console.error('Ошибка при получении объявлений:', err);
         res.status(500).send('Ошибка при получении объявлений');
