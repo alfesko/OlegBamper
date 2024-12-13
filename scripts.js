@@ -11,7 +11,7 @@ fetch('/cars.json')
 function setupEventHandlers() {
     const brandInput = document.getElementById('brand');
     if (brandInput) {
-        brandInput.addEventListener('input', function() {
+        brandInput.addEventListener('input', function () {
             const brandValue = this.value.toLowerCase();
             handleBrandInput(brandValue);
         });
@@ -21,7 +21,7 @@ function setupEventHandlers() {
 
     const modelInput = document.getElementById('model');
     if (modelInput) {
-        modelInput.addEventListener('input', function() {
+        modelInput.addEventListener('input', function () {
             const modelValue = this.value.toLowerCase();
             handleModelInput(modelValue);
         });
@@ -31,7 +31,7 @@ function setupEventHandlers() {
 
     const yearInput = document.getElementById('year');
     if (yearInput) {
-        yearInput.addEventListener('input', function() {
+        yearInput.addEventListener('input', function () {
             const yearValue = this.value.toLowerCase();
             handleYearInput(yearValue);
         });
@@ -39,7 +39,7 @@ function setupEventHandlers() {
         console.error('Элемент с id="year" не найден на странице.');
     }
 
-    document.addEventListener('click', function(event) {
+    document.addEventListener('click', function (event) {
         const brandAutocomplete = document.getElementById('brand-autocomplete');
         const brandInput = document.getElementById('brand');
 
@@ -48,7 +48,7 @@ function setupEventHandlers() {
         }
     });
 
-    document.addEventListener('click', function(event) {
+    document.addEventListener('click', function (event) {
         const modelAutocomplete = document.getElementById('model-autocomplete');
         const modelInput = document.getElementById('model');
 
@@ -57,7 +57,7 @@ function setupEventHandlers() {
         }
     });
 
-    document.addEventListener('click', function(event) {
+    document.addEventListener('click', function (event) {
         const yearAutocomplete = document.getElementById('year-autocomplete');
         const yearInput = document.getElementById('year');
 
@@ -80,7 +80,7 @@ function handleBrandInput(input) {
     filteredBrands.forEach(brand => {
         const option = document.createElement('div');
         option.textContent = brand.name;
-        option.onclick = function() {
+        option.onclick = function () {
             document.getElementById('brand').value = brand.name;
             populateModels(brand.id);
             autocompleteContainer.innerHTML = '';
@@ -107,7 +107,7 @@ function handleModelInput(input) {
     filteredModels.forEach(model => {
         const option = document.createElement('div');
         option.textContent = model.name;
-        option.onclick = function() {
+        option.onclick = function () {
             document.getElementById('model').value = model.name;
             populateYears(model['year-from'], model['year-to']);
             autocompleteContainer.innerHTML = '';
@@ -140,7 +140,7 @@ function handleYearInput(input) {
     for (let year = startYear; year <= endYear; year++) {
         const option = document.createElement('div');
         option.textContent = year;
-        option.onclick = function() {
+        option.onclick = function () {
             document.getElementById('year').value = year;
             autocompleteContainer.innerHTML = '';
         };
@@ -215,7 +215,7 @@ document.addEventListener('DOMContentLoaded', function () {
             } else {
                 addAdButton.style.display = 'block';
 
-                addAdButton.addEventListener('click', function() {
+                addAdButton.addEventListener('click', function () {
                     window.location.href = '/login';
                 });
             }

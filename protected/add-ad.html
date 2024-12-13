@@ -28,70 +28,70 @@
 </header>
 <body>
 <div class="container">
-<div class="container-add">
-    <h2>Добавить объявление</h2>
-    <form action="/announcement" method="POST" enctype="multipart/form-data">
-        <label for="brand">Марка:</label>
-        <input type="text" id="brand" name="brand" autocomplete="off" oninput="handleBrandInput(this.value)">
-        <div id="brand-autocomplete" class="autocomplete-items"></div>
-        <label for="year">Год выпуска:</label>
-        <input type="text" id="year" name="year" autocomplete="off" oninput="handleYearInput(this.value)">
-        <div id="year-autocomplete" class="autocomplete-items"></div>
-        <label for="model">Модель:</label>
-        <input type="text" id="model" name="model" required autocomplete="off" oninput="handleModelInput(this.value)">
-        <div id="model-autocomplete" class="autocomplete-items"></div>
-        <label for="engineVolume">Объем:</label>
-        <input type="text" id="engineVolume" name="engineVolume" required>
-        <div class="form-row">
-            <label for="transmission">Коробка:</label>
-            <select id="transmission" name="transmission" required>
-                <option value="АКПП">АКПП</option>
-                <option value="МКПП">МКПП</option>
-                <option value="РОБОТ">Робот</option>
-                <option value="ВАРИАТОР">Вариатор</option>
+    <div class="container-add">
+        <h2>Добавить объявление</h2>
+        <form action="/announcement" method="POST" enctype="multipart/form-data">
+            <label for="brand">Марка:</label>
+            <input type="text" id="brand" name="brand" autocomplete="off" oninput="handleBrandInput(this.value)">
+            <div id="brand-autocomplete" class="autocomplete-items"></div>
+            <label for="year">Год выпуска:</label>
+            <input type="text" id="year" name="year" autocomplete="off" oninput="handleYearInput(this.value)">
+            <div id="year-autocomplete" class="autocomplete-items"></div>
+            <label for="model">Модель:</label>
+            <input type="text" id="model" name="model" required autocomplete="off"
+                   oninput="handleModelInput(this.value)">
+            <div id="model-autocomplete" class="autocomplete-items"></div>
+            <label for="engineVolume">Объем:</label>
+            <input type="text" id="engineVolume" name="engineVolume" required>
+            <div class="form-row">
+                <label for="transmission">Коробка:</label>
+                <select id="transmission" name="transmission" required>
+                    <option value="АКПП">АКПП</option>
+                    <option value="МКПП">МКПП</option>
+                    <option value="РОБОТ">Робот</option>
+                    <option value="ВАРИАТОР">Вариатор</option>
+                </select>
+                <label for="bodyType">Кузов:</label>
+                <select id="bodyType" name="bodyType" required>
+                    <option value="Седан">Седан</option>
+                    <option value="Универсал">Универсал</option>
+                    <option value="хэтчбек">Хэтчбек</option>
+                    <option value="внедорожник">Внедорожник</option>
+                    <option value="минивэн">Минивэн</option>
+                    <option value="купе">Купе</option>
+                    <option value="лифтбек">Лифтбек</option>
+                    <option value="пикап">Пикап</option>
+                    <option value="кабриолет">Кабриолет</option>
+                    <option value="фургон">Фургон</option>
+                    <option value="грузовик">Грузовик</option>
+                    <option value="бортовой">Бортовой</option>
+                    <option value="тягач">Тягач</option>
+                    <option value="автобус">Автобус</option>
+                    <option value="прицеп">Прицеп</option>
+                    <option value="полуприцеп">Полуприцеп</option>
+                    <option value="погрузчик">Погрузчик</option>
+                </select>
+            </div>
+            <select id="fuelType" name="fuelType" required onchange="updateFuelSubtype()">
+                <option value="" disabled selected>Выберите тип топлива</option>
+                <option value="бензин">Бензин</option>
+                <option value="дизель">Дизель</option>
+                <option value="электро">Электро</option>
+                <option value="гибрид">Гибрид</option>
             </select>
-            <label for="bodyType">Кузов:</label>
-            <select id="bodyType" name="bodyType" required>
-                <option value="Седан">Седан</option>
-                <option value="Универсал">Универсал</option>
-                <option value="хэтчбек">Хэтчбек</option>
-                <option value="внедорожник">Внедорожник</option>
-                <option value="минивэн">Минивэн</option>
-                <option value="купе">Купе</option>
-                <option value="лифтбек">Лифтбек</option>
-                <option value="пикап">Пикап</option>
-                <option value="кабриолет">Кабриолет</option>
-                <option value="фургон">Фургон</option>
-                <option value="грузовик">Грузовик</option>
-                <option value="бортовой">Бортовой</option>
-                <option value="тягач">Тягач</option>
-                <option value="автобус">Автобус</option>
-                <option value="прицеп">Прицеп</option>
-                <option value="полуприцеп">Полуприцеп</option>
-                <option value="погрузчик">Погрузчик</option>
+            <label for="fuelSubtype" id="fuelSubtypeLabel" style="display:none;">Подтип топлива:</label>
+            <select id="fuelSubtype" name="fuelSubtype" style="display:none;">
             </select>
-        </div>
-        <select id="fuelType" name="fuelType" required onchange="updateFuelSubtype()">
-            <option value="" disabled selected>Выберите тип топлива</option>
-            <option value="бензин">Бензин</option>
-            <option value="дизель">Дизель</option>
-            <option value="электро">Электро</option>
-            <option value="гибрид">Гибрид</option>
-        </select>
-        <label for="fuelSubtype" id="fuelSubtypeLabel" style="display:none;">Подтип топлива:</label>
-        <select id="fuelSubtype" name="fuelSubtype" style="display:none;">
-            <!-- Подтипы будут добавляться динамически -->
-        </select>
-        <label for="description">Описание:</label>
-        <input type="text" id="description" name="description" required>
-        <label for="partNumber">Номер запчасти:</label>
-        <input type="text" id="partNumber" name="partNumber" required>
-        <label for="photo">Фото объявления:</label>
-        <input type="file" id="photo" name="photo" accept="image/*" required>
-        <br>
-        <button type="submit">Добавить</button>
-    </form>
-</div>
+            <label for="description">Описание:</label>
+            <input type="text" id="description" name="description" required>
+            <label for="partNumber">Номер запчасти:</label>
+            <input type="text" id="partNumber" name="partNumber" required>
+            <label for="photos">Фото объявления:</label>
+            <input type="file" id="photos" name="photos" accept="image/*" multiple required>
+            <br>
+            <button type="submit">Добавить</button>
+        </form>
+    </div>
 </div>
 <div class="footer">
     <div class="address-info">
@@ -106,7 +106,6 @@
         const fuelSubtypeSelect = document.getElementById('fuelSubtype');
         const fuelSubtypeLabel = document.getElementById('fuelSubtypeLabel');
 
-        // Очищаем предыдущие подтипы
         fuelSubtypeSelect.innerHTML = '';
 
         if (fuelType === 'бензин') {

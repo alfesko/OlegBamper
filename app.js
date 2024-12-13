@@ -53,10 +53,11 @@ app.post('/register', (req, res) => {
             res.status(500).send('Ошибка при регистрации пользователя');
         });
 });
+
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         const dir = './uploads';
-        if (!fs.existsSync(dir)){
+        if (!fs.existsSync(dir)) {
             fs.mkdirSync(dir);
         }
         cb(null, dir);
@@ -66,18 +67,18 @@ const storage = multer.diskStorage({
     }
 });
 
-const upload = multer({ storage: storage });
+const upload = multer({storage: storage});
 
-app.post('/announcement', upload.single('photo'), (req, res) => {
-    const { brand, year, model, engineVolume, transmission, bodyType } = req.body;
-    const photoPath = req.file.path;  // Путь к загруженному фото
+app.post('/announcement', upload.array('photos', 5), (req, res) => {
+    const {brand, year, model, engineVolume, transmission, bodyType, description, partNumber} = req.body;
+    const photoPaths = req.files.map(file => file.path);  // Массив путей к загруженным фото
 
-    // SQL запрос для вставки данных в базу данных
     const query = `
-        INSERT INTO announcements (brand, year, model, engine_volume, transmission, body_type, photo)
-        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        INSERT INTO announcements (brand, year, model, engine_volume, transmission, body_type, description, part_number,
+                                   photos)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
     `;
-    const values = [brand, year, model, engineVolume, transmission, bodyType, photoPath];
+    const values = [brand, year, model, engineVolume, transmission, bodyType, description, partNumber, photoPaths];
 
     pool.query(query, values, (err) => {
         if (err) {
@@ -87,7 +88,9 @@ app.post('/announcement', upload.single('photo'), (req, res) => {
         res.redirect('/');
     });
 });
+
 app.use('/uploads', express.static('uploads'));
+
 app.post('/login', async (req, res) => {
     const {username, password} = req.body;
     try {
@@ -138,13 +141,16 @@ app.get('/login', (req, res) => {
 app.get('/add-ad', (req, res) => {
     res.sendFile(path.join(__dirname, 'protected', 'add-ad.html'));
 });
+
 app.get('/announcement', (req, res) => {
     res.sendFile(path.join(__dirname, 'protected', 'add-ad.html'));
 });
+
 app.post('/submit-ad', (req, res) => {
     const {brand, model, year, engineVolume, description, bodyType, transmission} = req.body;
     res.send('Объявление успешно добавлено!');
 });
+
 app.get('/api/announcements', async (req, res) => {
     try {
         const client = await pool.connect();

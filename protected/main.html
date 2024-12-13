@@ -49,7 +49,8 @@
             <div id="year-autocomplete" class="autocomplete-items"></div>
 
             <label for="model">Модель:</label>
-            <input type="text" id="model" name="model" required autocomplete="off" oninput="handleModelInput(this.value)">
+            <input type="text" id="model" name="model" required autocomplete="off"
+                   oninput="handleModelInput(this.value)">
             <div id="model-autocomplete" class="autocomplete-items"></div>
 
             <label for="engineVolume">Объем:</label>
@@ -69,7 +70,6 @@
                 <option value="Универсал">Универсал</option>
                 <option value="хэтчбек">Хэтчбек</option>
                 <option value="внедорожник">Внедорожник</option>
-                <!-- Дополнительные варианты кузова -->
             </select>
             <label for="fuelType">Тип топлива:</label>
             <select id="fuelType" name="fuelType" required onchange="updateFuelSubtype()">
@@ -81,7 +81,6 @@
             </select>
             <label for="fuelSubtype" id="fuelSubtypeLabel" style="display:none;">Подтип топлива:</label>
             <select id="fuelSubtype" name="fuelSubtype" style="display:none;">
-                <!-- Подтипы будут добавляться динамически -->
             </select>
             <label for="article">Артикул объявления:</label>
             <input type="text" id="article" name="article" required>
@@ -94,7 +93,6 @@
     </div>
 
     <div id="announcements" class="announcements">
-        <!-- Объявления будут добавляться динамически через JavaScript -->
     </div>
 </div>
 
@@ -112,7 +110,6 @@
         const fuelSubtypeSelect = document.getElementById('fuelSubtype');
         const fuelSubtypeLabel = document.getElementById('fuelSubtypeLabel');
 
-        // Очищаем предыдущие подтипы
         fuelSubtypeSelect.innerHTML = '';
 
         if (fuelType === 'бензин') {
@@ -151,7 +148,8 @@
             fuelSubtypeSelect.style.display = 'none';
         }
     }
-    window.onload = function() {
+
+    window.onload = function () {
         fetch('/api/announcements')
             .then(response => response.json())
             .then(data => {
@@ -167,8 +165,56 @@
                         <p>Объем: ${announcement.engine_volume}</p>
                         <p>Коробка: ${announcement.transmission}</p>
                         <p>Кузов: ${announcement.body_type}</p>
-                        <img src="${announcement.photo}" alt="Фото объявления">
                     `;
+
+                    if (Array.isArray(announcement.photos) && announcement.photos.length > 0) {
+                        const sliderContainer = document.createElement('div');
+                        sliderContainer.classList.add('slider-container');
+
+                        const slider = document.createElement('div');
+                        slider.classList.add('slider');
+
+                        announcement.photos.forEach(photoPath => {
+                            const img = document.createElement('img');
+                            img.src = photoPath;
+                            img.alt = "Фото объявления";
+                            slider.appendChild(img);
+                        });
+
+                        const prevBtn = document.createElement('button');
+                        prevBtn.classList.add('prev-btn');
+                        prevBtn.innerHTML = '&#10094;';
+
+                        const nextBtn = document.createElement('button');
+                        nextBtn.classList.add('next-btn');
+                        nextBtn.innerHTML = '&#10095;';
+
+                        sliderContainer.appendChild(slider);
+                        sliderContainer.appendChild(prevBtn);
+                        sliderContainer.appendChild(nextBtn);
+                        announcementElement.appendChild(sliderContainer);
+
+                        // Логика для работы слайдера
+                        let currentIndex = 0;
+
+                        function showSlide(index) {
+                            const slideWidth = slider.clientWidth;
+                            slider.style.transform = `translateX(${-index * slideWidth}px)`;
+                        }
+
+                        prevBtn.addEventListener('click', () => {
+                            currentIndex = (currentIndex > 0) ? currentIndex - 1 : announcement.photos.length - 1;
+                            showSlide(currentIndex);
+                        });
+
+                        nextBtn.addEventListener('click', () => {
+                            currentIndex = (currentIndex < announcement.photos.length - 1) ? currentIndex + 1 : 0;
+                            showSlide(currentIndex);
+                        });
+
+                        window.addEventListener('resize', () => showSlide(currentIndex));
+                    }
+
                     announcementsContainer.appendChild(announcementElement);
                 });
             })
