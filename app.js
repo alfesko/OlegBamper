@@ -2,7 +2,7 @@ const express = require('express');
 const session = require('express-session');
 const path = require('path');
 const bcrypt = require('bcrypt');
-const {Pool} = require('pg');
+const { Pool } = require('pg');
 const pgSession = require('connect-pg-simple')(session);
 const dbConfig = require('./db-config');
 const multer = require('multer');
@@ -20,10 +20,10 @@ app.use(session({
     secret: 'your_secret_key',
     resave: false,
     saveUninitialized: false,
-    cookie: {secure: false}
+    cookie: { secure: false }
 }));
 
-app.use(express.urlencoded({extended: true}));
+app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(__dirname));
 
@@ -44,7 +44,7 @@ async function addUser(username, password) {
 }
 
 app.post('/register', (req, res) => {
-    const {username, password} = req.body;
+    const { username, password } = req.body;
     addUser(username, password)
         .then(() => {
             res.send('Пользователь успешно зарегистрирован!');
@@ -67,15 +67,14 @@ const storage = multer.diskStorage({
     }
 });
 
-const upload = multer({storage: storage});
+const upload = multer({ storage: storage });
 
 app.post('/announcement', upload.array('photos', 5), (req, res) => {
-    const {brand, year, model, engineVolume, transmission, bodyType, description, partNumber} = req.body;
+    const { brand, year, model, engineVolume, transmission, bodyType, description, partNumber } = req.body;
     const photoPaths = req.files.map(file => file.path);  // Массив путей к загруженным фото
 
     const query = `
-        INSERT INTO announcements (brand, year, model, engine_volume, transmission, body_type, description, part_number,
-                                   photos)
+        INSERT INTO announcements (brand, year, model, engine_volume, transmission, body_type, description, part_number, photos)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
     `;
     const values = [brand, year, model, engineVolume, transmission, bodyType, description, partNumber, photoPaths];
@@ -92,7 +91,7 @@ app.post('/announcement', upload.array('photos', 5), (req, res) => {
 app.use('/uploads', express.static('uploads'));
 
 app.post('/login', async (req, res) => {
-    const {username, password} = req.body;
+    const { username, password } = req.body;
     try {
         const client = await pool.connect();
         const result = await client.query('SELECT * FROM users WHERE username = $1', [username]);
@@ -127,7 +126,7 @@ app.get('/logout', (req, res) => {
 });
 
 app.get('/auth-status', (req, res) => {
-    res.json({loggedIn: !!req.session.loggedIn});
+    res.json({ loggedIn: !!req.session.loggedIn });
 });
 
 app.get('/', (req, res) => {
@@ -147,7 +146,7 @@ app.get('/announcement', (req, res) => {
 });
 
 app.post('/submit-ad', (req, res) => {
-    const {brand, model, year, engineVolume, description, bodyType, transmission} = req.body;
+    const { brand, model, year, engineVolume, description, bodyType, transmission } = req.body;
     res.send('Объявление успешно добавлено!');
 });
 
@@ -160,6 +159,19 @@ app.get('/api/announcements', async (req, res) => {
     } catch (err) {
         console.error('Ошибка при получении объявлений:', err);
         res.status(500).send('Ошибка при получении объявлений');
+    }
+});
+
+app.delete('/api/announcements/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const client = await pool.connect();
+        await client.query('DELETE FROM announcements WHERE id = $1', [id]);
+        client.release();
+        res.status(200).send('Объявление успешно удалено');
+    } catch (err) {
+        console.error('Ошибка при удалении объявления:', err);
+        res.status(500).send('Ошибка при удалении объявления');
     }
 });
 

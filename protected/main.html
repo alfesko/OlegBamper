@@ -165,6 +165,7 @@
                         <p>Объем: ${announcement.engine_volume}</p>
                         <p>Коробка: ${announcement.transmission}</p>
                         <p>Кузов: ${announcement.body_type}</p>
+                        <button class="delete-btn" data-id="${announcement.id}" style="display: none;">Удалить</button>
                     `;
 
                     if (Array.isArray(announcement.photos) && announcement.photos.length > 0) {
@@ -217,9 +218,42 @@
 
                     announcementsContainer.appendChild(announcementElement);
                 });
+
+                // Проверка авторизации и отображение кнопок удаления
+                fetch('/auth-status')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.loggedIn) {
+                            document.querySelectorAll('.delete-btn').forEach(button => {
+                                button.style.display = 'inline-block';
+                            });
+                        }
+                    });
             })
             .catch(error => console.error('Ошибка при загрузке объявлений:', error));
     };
+
+    // Обработчик для кнопки удаления
+    document.addEventListener('click', function (event) {
+        if (event.target.classList.contains('delete-btn')) {
+            const announcementId = event.target.getAttribute('data-id');
+            deleteAnnouncement(announcementId);
+        }
+    });
+
+    function deleteAnnouncement(id) {
+        fetch(`/api/announcements/${id}`, {
+            method: 'DELETE'
+        })
+            .then(response => {
+                if (response.ok) {
+                    window.location.reload(); // Перезагрузить страницу после удаления
+                } else {
+                    console.error('Ошибка при удалении объявления');
+                }
+            })
+            .catch(error => console.error('Ошибка при удалении объявления:', error));
+    }
 </script>
 <script src="/scripts.js"></script>
 </body>
