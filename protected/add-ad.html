@@ -30,6 +30,8 @@
 <div class="container">
     <div class="container-add">
         <h2>Добавить объявление</h2>
+        <!-- Кнопка перехода на главную страницу -->
+        <button onclick="window.location.href='/';" class="home-btn">На главную</button>
         <form action="/announcement" method="POST" enctype="multipart/form-data">
             <label for="brand">Марка:</label>
             <input type="text" id="brand" name="brand" autocomplete="off" oninput="handleBrandInput(this.value)">
