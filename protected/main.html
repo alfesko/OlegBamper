@@ -219,7 +219,6 @@
                     announcementsContainer.appendChild(announcementElement);
                 });
 
-                // Проверка авторизации и отображение кнопок удаления
                 fetch('/auth-status')
                     .then(response => response.json())
                     .then(data => {
@@ -247,7 +246,7 @@
         })
             .then(response => {
                 if (response.ok) {
-                    window.location.reload(); // Перезагрузить страницу после удаления
+                    window.location.reload();
                 } else {
                     console.error('Ошибка при удалении объявления');
                 }

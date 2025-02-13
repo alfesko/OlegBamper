@@ -24,6 +24,7 @@ app.use(session({
 }));
 
 app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(__dirname));
 
@@ -37,7 +38,7 @@ async function addUser(username, password) {
         const client = await pool.connect();
         await client.query('INSERT INTO users (username, password) VALUES ($1, $2)', [username, hashedPassword]);
         client.release();
-        console.log(`Пользователь с логином '${username}' успешно добавлен в базу данных!`);
+        console.log(`Пользователь '${username}' успешно добавлен!`);
     } catch (err) {
         console.error('Ошибка при добавлении пользователя:', err);
     }
@@ -46,12 +47,8 @@ async function addUser(username, password) {
 app.post('/register', (req, res) => {
     const { username, password } = req.body;
     addUser(username, password)
-        .then(() => {
-            res.send('Пользователь успешно зарегистрирован!');
-        })
-        .catch(err => {
-            res.status(500).send('Ошибка при регистрации пользователя');
-        });
+        .then(() => res.send('Пользователь успешно зарегистрирован!'))
+        .catch(err => res.status(500).send('Ошибка при регистрации пользователя'));
 });
 
 const storage = multer.diskStorage({
@@ -70,14 +67,41 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 app.post('/announcement', upload.array('photos', 5), (req, res) => {
-    const { brand, year, model, engineVolume, transmission, bodyType, description, partNumber } = req.body;
+    const {
+        brand,
+        year,
+        model,
+        engineVolume,
+        transmission,
+        bodyType,
+        description,
+        partNumber,
+        fuelType,          // Добавлено: тип топлива
+        fuelSubtype        // Добавлено: подтип топлива
+    } = req.body;
+
     const photoPaths = req.files.map(file => file.path);  // Массив путей к загруженным фото
 
     const query = `
-        INSERT INTO announcements (brand, year, model, engine_volume, transmission, body_type, description, part_number, photos)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        INSERT INTO announcements (
+            brand, year, model, engine_volume, transmission, body_type, 
+            description, part_number, photos, fuel_type, fuel_subtype
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
     `;
-    const values = [brand, year, model, engineVolume, transmission, bodyType, description, partNumber, photoPaths];
+
+    const values = [
+        brand,
+        year,
+        model,
+        engineVolume,
+        transmission,
+        bodyType,
+        description,
+        partNumber,
+        photoPaths,
+        fuelType,          // Добавлено: тип топлива
+        fuelSubtype        // Добавлено: подтип топлива
+    ];
 
     pool.query(query, values, (err) => {
         if (err) {
@@ -146,7 +170,7 @@ app.get('/announcement', (req, res) => {
 });
 
 app.post('/submit-ad', (req, res) => {
-    const { brand, model, year, engineVolume, description, bodyType, transmission } = req.body;
+    const { brand, model, year, engineVolume, description, bodyType, transmission, fuelType, fuelSubtype } = req.body;
     res.send('Объявление успешно добавлено!');
 });
 
@@ -177,4 +201,4 @@ app.delete('/api/announcements/:id', async (req, res) => {
 
 app.listen(PORT, () => {
     console.log(`Сервер запущен на порту ${PORT}`);
-})
+});
