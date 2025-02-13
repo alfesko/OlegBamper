@@ -105,15 +105,15 @@ body::before {
 }
 
 .announcement-item {
-    background-color: #ffffff;
+    background-color: #f9f9f9;
     border: 1px solid #dcdcdc;
-    border-radius: 8px;
+    border-radius: 5px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    padding: 20px;
-    margin-bottom: 10px;
+    padding: 15px;
+    margin-bottom: 20px;
     width: 100%;
     max-width: 280px;
-    height: 320px;
+    height: 520px;
     text-align: center;
     transition: transform 0.2s;
     display: flex;
@@ -127,7 +127,7 @@ body::before {
 
 .announcement-item img {
     max-width: 100%;
-    max-height: 150px;
+    max-height: 250px;
     border-radius: 5px;
     margin-bottom: 10px;
     object-fit: cover;

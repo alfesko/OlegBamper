@@ -165,6 +165,10 @@
                         <p>Объем: ${announcement.engine_volume}</p>
                         <p>Коробка: ${announcement.transmission}</p>
                         <p>Кузов: ${announcement.body_type}</p>
+                        <p>Тип топлива: ${announcement.fuel_type}</p>
+                        <p>Подтип топлива: ${announcement.fuel_subtype}</p>
+                        <p>Описание: ${announcement.description}</p>
+                        <p>Номер запчасти: ${announcement.part_number}</p>
                         <button class="delete-btn" data-id="${announcement.id}" style="display: none;">Удалить</button>
                     `;
 
@@ -195,7 +199,6 @@
                         sliderContainer.appendChild(nextBtn);
                         announcementElement.appendChild(sliderContainer);
 
-                        // Логика для работы слайдера
                         let currentIndex = 0;
 
                         function showSlide(index) {
@@ -232,7 +235,6 @@
             .catch(error => console.error('Ошибка при загрузке объявлений:', error));
     };
 
-    // Обработчик для кнопки удаления
     document.addEventListener('click', function (event) {
         if (event.target.classList.contains('delete-btn')) {
             const announcementId = event.target.getAttribute('data-id');
