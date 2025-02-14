@@ -159,6 +159,7 @@
                 data.forEach(announcement => {
                     const announcementElement = document.createElement('div');
                     announcementElement.classList.add('announcement-item');
+
                     announcementElement.innerHTML = `
                         <h3>${announcement.brand} - ${announcement.model}</h3>
                         <p>Год: ${announcement.year}</p>
@@ -169,7 +170,10 @@
                         <p>Подтип топлива: ${announcement.fuel_subtype}</p>
                         <p>Описание: ${announcement.description}</p>
                         <p>Номер запчасти: ${announcement.part_number}</p>
-                        <button class="delete-btn" data-id="${announcement.id}" style="display: none;">Удалить</button>
+                        <div class="announcement-actions">
+                            <button class="edit-btn" data-id="${announcement.id}" style="display: none;">Редактировать</button>
+                            <button class="delete-btn" data-id="${announcement.id}" style="display: none;">Удалить</button>
+                        </div>
                     `;
 
                     if (Array.isArray(announcement.photos) && announcement.photos.length > 0) {
@@ -226,35 +230,30 @@
                     .then(response => response.json())
                     .then(data => {
                         if (data.loggedIn) {
-                            document.querySelectorAll('.delete-btn').forEach(button => {
+                            document.querySelectorAll('.delete-btn, .edit-btn').forEach(button => {
                                 button.style.display = 'inline-block';
                             });
                         }
                     });
             })
-            .catch(error => console.error('Ошибка при загрузке объявлений:', error));
+            .catch(error => console.error('Ошибка:', error));
     };
 
     document.addEventListener('click', function (event) {
+        const id = event.target.dataset.id;
+
         if (event.target.classList.contains('delete-btn')) {
-            const announcementId = event.target.getAttribute('data-id');
-            deleteAnnouncement(announcementId);
+            if (confirm('Вы уверены, что хотите удалить объявление?')) {
+                fetch(`/api/announcements/${id}`, { method: 'DELETE' })
+                    .then(response => response.ok && window.location.reload())
+                    .catch(error => console.error('Ошибка:', error));
+            }
+        }
+
+        if (event.target.classList.contains('edit-btn')) {
+            window.location.href = `/edit-announcement/${id}`;
         }
     });
-
-    function deleteAnnouncement(id) {
-        fetch(`/api/announcements/${id}`, {
-            method: 'DELETE'
-        })
-            .then(response => {
-                if (response.ok) {
-                    window.location.reload();
-                } else {
-                    console.error('Ошибка при удалении объявления');
-                }
-            })
-            .catch(error => console.error('Ошибка при удалении объявления:', error));
-    }
 </script>
 <script src="/scripts.js"></script>
 </body>
