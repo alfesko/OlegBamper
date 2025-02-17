@@ -77,11 +77,11 @@ app.post('/announcement', upload.array('photos', 5), (req, res) => {
         bodyType,
         description,
         partNumber,
-        fuelType,          // Добавлено: тип топлива
-        fuelSubtype        // Добавлено: подтип топлива
+        fuelType,
+        fuelSubtype
     } = req.body;
 
-    const photoPaths = req.files.map(file => file.path);  // Массив путей к загруженным фото
+    const photoPaths = req.files.map(file => file.path);
 
     const query = `
         INSERT INTO announcements (brand, year, model, engine_volume, transmission, body_type,
@@ -99,8 +99,8 @@ app.post('/announcement', upload.array('photos', 5), (req, res) => {
         description,
         partNumber,
         photoPaths,
-        fuelType,          // Добавлено: тип топлива
-        fuelSubtype        // Добавлено: подтип топлива
+        fuelType,
+        fuelSubtype
     ];
 
     pool.query(query, values, (err) => {

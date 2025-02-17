@@ -6,7 +6,7 @@
   <title>Редактировать объявление</title>
   <link rel="stylesheet" href="/public/styles.css">
   <link rel="icon" href="/car.ico" type="image/x-icon">
-  <style>
+    <style>
     .photo-container {
       position: relative;
       display: inline-block;
@@ -19,6 +19,7 @@
       border-radius: 4px;
       padding: 5px;
     }
+
     .delete-checkbox {
       position: absolute;
       top: 5px;
@@ -32,10 +33,26 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 12px;
+      font-size: 16px;
+      color: red;
+      font-weight: bold;
+      line-height: 0;
+      appearance: none;
+      -webkit-appearance: none;
     }
+
+    .delete-checkbox:before {
+      content: '\00D7';
+      font-size: 20px;
+    }
+
     .delete-checkbox:hover {
       background: rgba(255, 255, 255, 1);
+    }
+
+    .delete-checkbox:checked:before {
+      content: '\2716';
+      color: darkred;
     }
   </style>
 </head>
