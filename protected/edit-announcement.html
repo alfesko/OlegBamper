@@ -6,6 +6,38 @@
   <title>Редактировать объявление</title>
   <link rel="stylesheet" href="/public/styles.css">
   <link rel="icon" href="/car.ico" type="image/x-icon">
+  <style>
+    .photo-container {
+      position: relative;
+      display: inline-block;
+      margin: 5px;
+    }
+    .photo-thumbnail {
+      max-width: 150px;
+      height: auto;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 5px;
+    }
+    .delete-checkbox {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      background: rgba(255, 255, 255, 0.7);
+      border: none;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+    }
+    .delete-checkbox:hover {
+      background: rgba(255, 255, 255, 1);
+    }
+  </style>
 </head>
 <body>
 <header class="header">
@@ -73,6 +105,8 @@
 </div>
 
 <script>
+  let photosToDelete = [];
+
   async function loadAnnouncement() {
     try {
       const id = window.location.pathname.split('/').pop();
@@ -95,17 +129,36 @@
       const photosContainer = document.getElementById('currentPhotos');
       photosContainer.innerHTML = '';
       if (data.photos && data.photos.length > 0) {
-        data.photos.forEach(photo => {
+        data.photos.forEach((photo, index) => {
+          const photoContainer = document.createElement('div');
+          photoContainer.classList.add('photo-container');
+
           const img = document.createElement('img');
           img.src = photo;
           img.alt = "Фото объявления";
           img.classList.add('photo-thumbnail');
-          photosContainer.appendChild(img);
+
+          const checkbox = document.createElement('input');
+          checkbox.type = 'checkbox';
+          checkbox.classList.add('delete-checkbox');
+          checkbox.onclick = () => markForDeletion(index);
+
+          photoContainer.appendChild(img);
+          photoContainer.appendChild(checkbox);
+          photosContainer.appendChild(photoContainer);
         });
       }
     } catch (error) {
       alert('Не удалось загрузить объявление: ' + error.message);
       window.location.href = '/';
+    }
+  }
+
+  function markForDeletion(index) {
+    if (photosToDelete.includes(index)) {
+      photosToDelete = photosToDelete.filter(photoIndex => photoIndex !== index);
+    } else {
+      photosToDelete.push(index);
     }
   }
 
@@ -119,6 +172,8 @@
     }
 
     const formData = new FormData(e.target);
+
+    formData.append('photosToDelete', JSON.stringify(photosToDelete));
 
     try {
       const response = await fetch(`/api/announcements/${id}`, {
@@ -138,5 +193,6 @@
 
   loadAnnouncement();
 </script>
+
 </body>
 </html>

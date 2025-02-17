@@ -60,7 +60,8 @@ const storage = multer.diskStorage({
         cb(null, dir);
     },
     filename: (req, file, cb) => {
-        cb(null, Date.now() + path.extname(file.originalname));
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, uniqueSuffix + path.extname(file.originalname));
     }
 });
 
@@ -205,6 +206,36 @@ app.get('/api/announcements/:id', async (req, res) => {
     }
 });
 
+app.delete('/api/announcements/:id/photos/:index', async (req, res) => {
+    const { id, index } = req.params;
+
+    try {
+        const client = await pool.connect();
+        const result = await client.query('SELECT photos FROM announcements WHERE id = $1', [id]);
+
+        if (result.rows.length === 0) {
+            client.release();
+            return res.status(404).json({ error: 'Объявление не найдено' });
+        }
+
+        const photos = result.rows[0].photos;
+        if (!Array.isArray(photos) || index >= photos.length) {
+            client.release();
+            return res.status(400).json({ error: 'Некорректный индекс фотографии' });
+        }
+
+        photos.splice(index, 1);
+
+        await client.query('UPDATE announcements SET photos = $1 WHERE id = $2', [photos, id]);
+        client.release();
+
+        res.status(200).json({ success: true });
+    } catch (err) {
+        console.error('Ошибка:', err);
+        res.status(500).json({ error: 'Ошибка сервера' });
+    }
+});
+
 app.get('/api/announcements', async (req, res) => {
     try {
         const client = await pool.connect();
@@ -218,58 +249,44 @@ app.get('/api/announcements', async (req, res) => {
 });
 app.put('/api/announcements/:id', upload.array('photos', 5), async (req, res) => {
     try {
-        const {
-            brand,
-            year,
-            model,
-            engineVolume,
-            transmission,
-            bodyType,
-            description,
-            partNumber,
-            fuelType,
-            fuelSubtype
-        } = req.body;
+        const { brand, year, model, engineVolume, transmission, bodyType, description, partNumber, fuelType, fuelSubtype } = req.body;
+        const photosToDelete = JSON.parse(req.body.photosToDelete || '[]'); // Получаем список фото для удаления
+
+        const client = await pool.connect();
+        const result = await client.query('SELECT photos FROM announcements WHERE id = $1', [req.params.id]);
+        const currentPhotos = result.rows[0].photos || [];
+
+        const updatedPhotos = currentPhotos.filter((_, index) => !photosToDelete.includes(index));
+
+        let newPhotos = updatedPhotos;
+
+        if (req.files && req.files.length > 0) {
+            const newPhotoPaths = req.files.map(file => file.path);
+            newPhotos = updatedPhotos.concat(newPhotoPaths);
+        }
 
         const query = `
             UPDATE announcements
-            SET brand         = $1,
-                year          = $2,
-                model         = $3,
-                engine_volume = $4,
-                transmission  = $5,
-                body_type     = $6,
-                description   = $7,
-                part_number   = $8,
-                fuel_type     = $9,
-                fuel_subtype  = $10
-            WHERE id = $11
+            SET brand = $1, year = $2, model = $3, engine_volume = $4, transmission = $5, body_type = $6,
+                description = $7, part_number = $8, fuel_type = $9, fuel_subtype = $10, photos = $11
+            WHERE id = $12
         `;
 
         const values = [
-            brand,
-            year,
-            model,
-            engineVolume,
-            transmission,
-            bodyType,
-            description,
-            partNumber,
-            fuelType,
-            fuelSubtype,
-            req.params.id
+            brand, year, model, engineVolume, transmission, bodyType,
+            description, partNumber, fuelType, fuelSubtype, newPhotos, req.params.id
         ];
 
-        const client = await pool.connect();
         await client.query(query, values);
         client.release();
 
-        res.status(200).json({success: true});
+        res.status(200).json({ success: true });
     } catch (err) {
         console.error('Ошибка:', err);
-        res.status(500).json({success: false});
+        res.status(500).json({ success: false });
     }
 });
+
 app.delete('/api/announcements/:id', async (req, res) => {
     const {id} = req.params;
     try {
