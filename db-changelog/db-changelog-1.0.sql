@@ -40,3 +40,5 @@ ALTER TABLE announcements
 DROP COLUMN photo;
 ALTER TABLE announcements ADD COLUMN fuel_type VARCHAR(50);
 ALTER TABLE announcements ADD COLUMN fuel_subtype VARCHAR(50);
+ALTER TABLE announcements
+    ADD COLUMN part VARCHAR(50);

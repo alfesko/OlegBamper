@@ -78,15 +78,16 @@ app.post('/announcement', upload.array('photos', 5), (req, res) => {
         description,
         partNumber,
         fuelType,
-        fuelSubtype
+        fuelSubtype,
+        part
     } = req.body;
 
     const photoPaths = req.files.map(file => file.path);
 
     const query = `
         INSERT INTO announcements (brand, year, model, engine_volume, transmission, body_type,
-                                   description, part_number, photos, fuel_type, fuel_subtype)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+                                   description, part_number, photos, fuel_type, fuel_subtype, part)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
     `;
 
     const values = [
@@ -100,7 +101,8 @@ app.post('/announcement', upload.array('photos', 5), (req, res) => {
         partNumber,
         photoPaths,
         fuelType,
-        fuelSubtype
+        fuelSubtype,
+        part
     ];
 
     pool.query(query, values, (err) => {
