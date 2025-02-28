@@ -13,8 +13,7 @@
             margin: 5px;
         }
         #part {
-            min-width: 100px; /* Минимальная ширина */
-            width: auto;      /* Автоматическая ширина */
+            min-width: 350px;      /* Автоматическая ширина */
         }
         .photo-thumbnail {
             max-width: 150px;
@@ -9120,18 +9119,7 @@
         option.textContent = part.label;
         partSelect.appendChild(option);
     });
-    function adjustInputWidth(input) {
-        const temp = document.createElement('span');
-        temp.style.visibility = 'hidden';
-        temp.style.whiteSpace = 'nowrap';
-        temp.style.fontSize = window.getComputedStyle(input).fontSize;
-        temp.style.fontFamily = window.getComputedStyle(input).fontFamily;
-        temp.textContent = input.value;
-        document.body.appendChild(temp);
-        const width = temp.getBoundingClientRect().width;
-        document.body.removeChild(temp);
-        input.style.width = `${width + 10}px`;
-    }
+
 
     document.getElementById('part').addEventListener('input', function() {
         adjustInputWidth(this);
