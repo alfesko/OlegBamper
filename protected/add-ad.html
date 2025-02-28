@@ -41,7 +41,6 @@
             <label for="part">Запчасть:</label>
             <input type="text" id="part" name="part" autocomplete="off" oninput="handlePartInput(this.value)">
             <div id="part-autocomplete" class="autocomplete-items"></div>
-            <button type="submit">Поиск</button>
             <label for="model">Модель:</label>
             <input type="text" id="model" name="model" required autocomplete="off"
                    oninput="handleModelInput(this.value)">
@@ -107,7 +106,6 @@
     <p>© ИП Щука О.Е., УНП 590236855, 22.04.2004, shchuka1971@mail.ru</p>
 </div>
 <script>
-    // Генерация массива с данными
     const parts = [
         {
             "value": "CD-чейнджер",

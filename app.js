@@ -250,11 +250,25 @@ app.get('/api/announcements', async (req, res) => {
     }
 });
 app.put('/api/announcements/:id', upload.array('photos', 5), async (req, res) => {
-    try {
-        const { brand, year, model, engineVolume, transmission, bodyType, description, partNumber, fuelType, fuelSubtype } = req.body;
-        const photosToDelete = JSON.parse(req.body.photosToDelete || '[]'); // Получаем список фото для удаления
+    const {
+        brand,
+        year,
+        model,
+        engineVolume,
+        transmission,
+        bodyType,
+        description,
+        partNumber,
+        fuelType,
+        fuelSubtype,
+        part
+    } = req.body;
 
+    const photosToDelete = JSON.parse(req.body.photosToDelete || '[]');
+
+    try {
         const client = await pool.connect();
+
         const result = await client.query('SELECT photos FROM announcements WHERE id = $1', [req.params.id]);
         const currentPhotos = result.rows[0].photos || [];
 
@@ -270,13 +284,24 @@ app.put('/api/announcements/:id', upload.array('photos', 5), async (req, res) =>
         const query = `
             UPDATE announcements
             SET brand = $1, year = $2, model = $3, engine_volume = $4, transmission = $5, body_type = $6,
-                description = $7, part_number = $8, fuel_type = $9, fuel_subtype = $10, photos = $11
-            WHERE id = $12
+                description = $7, part_number = $8, fuel_type = $9, fuel_subtype = $10, photos = $11, part = $12
+            WHERE id = $13
         `;
 
         const values = [
-            brand, year, model, engineVolume, transmission, bodyType,
-            description, partNumber, fuelType, fuelSubtype, newPhotos, req.params.id
+            brand,
+            year,
+            model,
+            engineVolume,
+            transmission,
+            bodyType,
+            description,
+            partNumber,
+            fuelType,
+            fuelSubtype,
+            newPhotos,
+            part,
+            req.params.id
         ];
 
         await client.query(query, values);
@@ -285,7 +310,7 @@ app.put('/api/announcements/:id', upload.array('photos', 5), async (req, res) =>
         res.status(200).json({ success: true });
     } catch (err) {
         console.error('Ошибка:', err);
-        res.status(500).json({ success: false });
+        res.status(500).json({ success: false, error: err.message });
     }
 });
 

@@ -9169,9 +9169,9 @@
     });
     function handlePartInput(value) {
         const autocompleteContainer = document.getElementById('part-autocomplete');
-        autocompleteContainer.innerHTML = '';  // Очищаем контейнер автозаполнения
+        autocompleteContainer.innerHTML = '';
 
-        if (!value) return;  // Если поле пустое, не отображаем результаты
+        if (!value) return;
 
         const filteredParts = parts.filter(part => part.label.toLowerCase().includes(value.toLowerCase()));
 
