@@ -35,18 +35,24 @@
     </div>
 </header>
 <h2>Объявления</h2>
+<h3>Курс</h3>
 <div class="currency-edit">
-    <label for="eur">EUR:</label>
-    <input type="text" id="eur" name="eur" class="currency-input" value="1.00">
+    <h3>Редактировать курсы валют</h3>
+    <form id="currencyForm">
+        <label for="eur">1 EUR =</label>
+        <input type="number" id="eur" name="eur" class="currency-input" step="0.0001" required>
+        <span>BYN</span>
 
-    <label for="usd">USD:</label>
-    <input type="text" id="usd" name="usd" class="currency-input" value="1.00">
+        <label for="usd">1 USD =</label>
+        <input type="number" id="usd" name="usd" class="currency-input" step="0.0001" required>
+        <span>BYN</span>
 
-    <label for="rub">RUB:</label>
-    <input type="text" id="rub" name="rub" class="currency-input" value="1.00">
+        <label for="rub">100 RUB =</label>
+        <input type="number" id="rub" name="rub" class="currency-input" step="0.0001" required>
+        <span>BYN</span>
 
-    <label for="byn">BYN:</label>
-    <input type="text" id="byn" name="byn" class="currency-input" value="1.00">
+        <button type="submit">Сохранить курсы</button>
+    </form>
 </div>
 <div class="main-content">
     <div class="container">
@@ -9198,7 +9204,52 @@
             autocompleteContainer.appendChild(div);
         });
     }
+    document.getElementById('currencyForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
 
+        const formData = {
+            eur: parseFloat(document.getElementById('eur').value),
+            usd: parseFloat(document.getElementById('usd').value),
+            rub: parseFloat(document.getElementById('rub').value)
+        };
+
+        try {
+            const response = await fetch('/api/currency-rates', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            });
+
+            if (response.ok) {
+                alert('Курсы валют успешно обновлены!');
+            } else {
+                alert('Ошибка при обновлении курсов валют');
+            }
+        } catch (error) {
+            console.error('Ошибка:', error);
+            alert('Ошибка при отправке данных');
+        }
+    });
+    async function loadCurrencyRates() {
+        try {
+            const response = await fetch('/api/currency-rates');
+            if (response.ok) {
+                const data = await response.json();
+                document.getElementById('eur').value = data.eur_to_byn;
+                document.getElementById('usd').value = data.usd_to_byn;
+                document.getElementById('rub').value = data.rub_to_byn;
+            } else {
+                console.error('Ошибка при загрузке курсов валют');
+            }
+        } catch (error) {
+            console.error('Ошибка:', error);
+        }
+    }
+
+    // Загрузить курсы валют при загрузке страницы
+    window.addEventListener('load', loadCurrencyRates);
 </script>
 <script src="/scripts.js"></script>
 </body>

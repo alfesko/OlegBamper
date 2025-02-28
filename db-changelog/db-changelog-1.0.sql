@@ -44,3 +44,10 @@ ALTER TABLE announcements
     ADD COLUMN part VARCHAR(50);
 ALTER TABLE announcements
     ADD COLUMN price NUMERIC(10, 2);
+CREATE TABLE currency_rates (
+                                id SERIAL PRIMARY KEY,
+                                eur_to_byn NUMERIC(10, 4) NOT NULL,
+                                usd_to_byn NUMERIC(10, 4) NOT NULL,
+                                rub_to_byn NUMERIC(10, 4) NOT NULL,
+                                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

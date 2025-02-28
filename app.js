@@ -330,7 +330,46 @@ app.delete('/api/announcements/:id', async (req, res) => {
         res.status(500).send('Ошибка при удалении объявления');
     }
 });
+// Получить текущие курсы валют
+app.get('/api/currency-rates', async (req, res) => {
+    try {
+        const client = await pool.connect();
+        const result = await client.query('SELECT * FROM currency_rates ORDER BY updated_at DESC LIMIT 1');
+        client.release();
 
+        if (result.rows.length > 0) {
+            res.json(result.rows[0]);
+        } else {
+            res.status(404).json({ error: 'Курсы валют не найдены' });
+        }
+    } catch (err) {
+        console.error('Ошибка при получении курсов валют:', err);
+        res.status(500).json({ error: 'Ошибка сервера' });
+    }
+});
+
+// Обновить курсы валют
+app.post('/api/currency-rates', async (req, res) => {
+    const { eur, usd, rub } = req.body;
+
+    if (!eur || !usd || !rub) {
+        return res.status(400).json({ error: 'Все поля обязательны' });
+    }
+
+    try {
+        const client = await pool.connect();
+        await client.query(
+            'INSERT INTO currency_rates (eur_to_byn, usd_to_byn, rub_to_byn) VALUES ($1, $2, $3)',
+            [eur, usd, rub]
+        );
+        client.release();
+
+        res.status(200).json({ success: true });
+    } catch (err) {
+        console.error('Ошибка при обновлении курсов валют:', err);
+        res.status(500).json({ error: 'Ошибка сервера' });
+    }
+});
 app.listen(PORT, () => {
     console.log(`Сервер запущен на порту ${PORT}`);
 });
