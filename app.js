@@ -239,13 +239,42 @@ app.delete('/api/announcements/:id/photos/:index', async (req, res) => {
         res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
+async function getCurrencyRates() {
+    try {
+        const client = await pool.connect();
+        const result = await client.query('SELECT * FROM currency_rates ORDER BY updated_at DESC LIMIT 1');
+        client.release();
 
+        if (result.rows.length > 0) {
+            return result.rows[0];
+        } else {
+            return null;
+        }
+    } catch (err) {
+        console.error('Ошибка при получении курсов валют:', err);
+        return null;
+    }
+}
 app.get('/api/announcements', async (req, res) => {
     try {
         const client = await pool.connect();
-        const result = await client.query('SELECT * FROM announcements');
+        const announcements = await client.query('SELECT * FROM announcements');
+        const currencyRates = await getCurrencyRates(); // Получаем курсы валют
+
+        if (!currencyRates) {
+            client.release();
+            return res.status(500).json({ error: 'Курсы валют не найдены' });
+        }
+
+        const announcementsWithConvertedPrices = announcements.rows.map(announcement => ({
+            ...announcement,
+            price_eur: (announcement.price * currencyRates.usd_to_byn / currencyRates.eur_to_byn).toFixed(2),
+            price_byn: (announcement.price * currencyRates.usd_to_byn).toFixed(2),
+            price_rub: (announcement.price * currencyRates.usd_to_byn / currencyRates.rub_to_byn * 100).toFixed(2)
+        }));
+
         client.release();
-        res.json(result.rows);
+        res.json(announcementsWithConvertedPrices);
     } catch (err) {
         console.error('Ошибка при получении объявлений:', err);
         res.status(500).send('Ошибка при получении объявлений');

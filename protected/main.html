@@ -9035,6 +9035,7 @@
         option.textContent = part.label;
         partSelect.appendChild(option);
     });
+
     function updateFuelSubtype() {
         const fuelType = document.getElementById('fuelType').value;
         const fuelSubtypeSelect = document.getElementById('fuelSubtype');
@@ -9101,7 +9102,7 @@
                         <p>Описание: ${announcement.description}</p>
                         <p>Номер запчасти: ${announcement.part_number}</p>
                         <p>Запчасть: ${announcement.part}</p>
-                        <p>Цена: ${announcement.price} USD</p>
+                        <p>Цена:<br> ${announcement.price} USD <br> ${announcement.price_eur} EUR <br> ${announcement.price_rub} RUB <br> ${announcement.price_byn} BYN</p>
                         <div class="announcement-actions">
                             <button class="edit-btn" data-id="${announcement.id}" style="display: none;">Редактировать</button>
                             <button class="delete-btn" data-id="${announcement.id}" style="display: none;">Удалить</button>
@@ -9186,6 +9187,7 @@
             window.location.href = `/edit-announcement/${id}`;
         }
     });
+
     function handlePartInput(value) {
         const autocompleteContainer = document.getElementById('part-autocomplete');
         autocompleteContainer.innerHTML = '';
@@ -9204,6 +9206,7 @@
             autocompleteContainer.appendChild(div);
         });
     }
+
     document.getElementById('currencyForm').addEventListener('submit', async (e) => {
         e.preventDefault();
 
@@ -9232,6 +9235,7 @@
             alert('Ошибка при отправке данных');
         }
     });
+
     async function loadCurrencyRates() {
         try {
             const response = await fetch('/api/currency-rates');
@@ -9248,7 +9252,6 @@
         }
     }
 
-    // Загрузить курсы валют при загрузке страницы
     window.addEventListener('load', loadCurrencyRates);
 </script>
 <script src="/scripts.js"></script>
