@@ -12,9 +12,11 @@
             display: inline-block;
             margin: 5px;
         }
+
         #part {
-            min-width: 350px;      /* Автоматическая ширина */
+            min-width: 350px; /* Автоматическая ширина */
         }
+
         .photo-thumbnail {
             max-width: 150px;
             height: auto;
@@ -142,7 +144,8 @@
 
             <label for="partNumber">Номер запчасти:</label>
             <input type="text" id="partNumber" name="partNumber" required>
-
+            <label for="price">Цена (USD):</label>
+            <input type="number" id="price" name="price" step="0.01" min="0" value="${announcement.price}" required>
             <label for="photos">Фото объявления:</label>
             <input type="file" id="photos" name="photos" accept="image/*" multiple>
 
@@ -175,6 +178,7 @@
             document.getElementById('description').value = data.description || '';
             document.getElementById('partNumber').value = data.part_number || '';
             document.getElementById('part').value = data.part || '';
+            document.getElementById('price').value = data.price || ';'
 
             const photosContainer = document.getElementById('currentPhotos');
             photosContainer.innerHTML = '';
@@ -9121,9 +9125,10 @@
     });
 
 
-    document.getElementById('part').addEventListener('input', function() {
+    document.getElementById('part').addEventListener('input', function () {
         adjustInputWidth(this);
     });
+
     function handlePartInput(value) {
         const autocompleteContainer = document.getElementById('part-autocomplete');
         autocompleteContainer.innerHTML = '';
@@ -9150,7 +9155,8 @@
             photosToDelete.push(index);
         }
     }
-    document.getElementById('part').addEventListener('change', function() {
+
+    document.getElementById('part').addEventListener('change', function () {
         adjustInputWidth(this);
     });
     document.getElementById('editForm').addEventListener('submit', async (e) => {

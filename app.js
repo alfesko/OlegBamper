@@ -79,15 +79,16 @@ app.post('/announcement', upload.array('photos', 5), (req, res) => {
         partNumber,
         fuelType,
         fuelSubtype,
-        part
+        part,
+        price // Новое поле
     } = req.body;
 
     const photoPaths = req.files.map(file => file.path);
 
     const query = `
         INSERT INTO announcements (brand, year, model, engine_volume, transmission, body_type,
-                                   description, part_number, photos, fuel_type, fuel_subtype, part)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+                                   description, part_number, photos, fuel_type, fuel_subtype, part, price)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
     `;
 
     const values = [
@@ -102,7 +103,8 @@ app.post('/announcement', upload.array('photos', 5), (req, res) => {
         photoPaths,
         fuelType,
         fuelSubtype,
-        part
+        part,
+        price // Новое значение
     ];
 
     pool.query(query, values, (err) => {
@@ -261,7 +263,8 @@ app.put('/api/announcements/:id', upload.array('photos', 5), async (req, res) =>
         partNumber,
         fuelType,
         fuelSubtype,
-        part
+        part,
+        price // Новое поле
     } = req.body;
 
     const photosToDelete = JSON.parse(req.body.photosToDelete || '[]');
@@ -284,8 +287,8 @@ app.put('/api/announcements/:id', upload.array('photos', 5), async (req, res) =>
         const query = `
             UPDATE announcements
             SET brand = $1, year = $2, model = $3, engine_volume = $4, transmission = $5, body_type = $6,
-                description = $7, part_number = $8, fuel_type = $9, fuel_subtype = $10, photos = $11, part = $12
-            WHERE id = $13
+                description = $7, part_number = $8, fuel_type = $9, fuel_subtype = $10, photos = $11, part = $12, price = $13
+            WHERE id = $14
         `;
 
         const values = [
@@ -301,6 +304,7 @@ app.put('/api/announcements/:id', upload.array('photos', 5), async (req, res) =>
             fuelSubtype,
             newPhotos,
             part,
+            price,
             req.params.id
         ];
 
