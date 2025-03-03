@@ -80,7 +80,7 @@ app.post('/announcement', upload.array('photos', 5), (req, res) => {
         fuelType,
         fuelSubtype,
         part,
-        price // Новое поле
+        price
     } = req.body;
 
     const photoPaths = req.files.map(file => file.path);
@@ -193,25 +193,25 @@ app.post('/submit-ad', (req, res) => {
     res.send('Объявление успешно добавлено!');
 });
 app.get('/api/announcements/:id', async (req, res) => {
-    const { id } = req.params;
+    const {id} = req.params;
     try {
         const client = await pool.connect();
         const result = await client.query('SELECT * FROM announcements WHERE id = $1', [id]);
         client.release();
 
         if (result.rows.length === 0) {
-            return res.status(404).json({ error: 'Объявление не найдено' });
+            return res.status(404).json({error: 'Объявление не найдено'});
         }
 
         res.json(result.rows[0]);
     } catch (err) {
         console.error('Ошибка при получении объявления:', err);
-        res.status(500).json({ error: 'Ошибка сервера' });
+        res.status(500).json({error: 'Ошибка сервера'});
     }
 });
 
 app.delete('/api/announcements/:id/photos/:index', async (req, res) => {
-    const { id, index } = req.params;
+    const {id, index} = req.params;
 
     try {
         const client = await pool.connect();
@@ -219,13 +219,13 @@ app.delete('/api/announcements/:id/photos/:index', async (req, res) => {
 
         if (result.rows.length === 0) {
             client.release();
-            return res.status(404).json({ error: 'Объявление не найдено' });
+            return res.status(404).json({error: 'Объявление не найдено'});
         }
 
         const photos = result.rows[0].photos;
         if (!Array.isArray(photos) || index >= photos.length) {
             client.release();
-            return res.status(400).json({ error: 'Некорректный индекс фотографии' });
+            return res.status(400).json({error: 'Некорректный индекс фотографии'});
         }
 
         photos.splice(index, 1);
@@ -233,12 +233,13 @@ app.delete('/api/announcements/:id/photos/:index', async (req, res) => {
         await client.query('UPDATE announcements SET photos = $1 WHERE id = $2', [photos, id]);
         client.release();
 
-        res.status(200).json({ success: true });
+        res.status(200).json({success: true});
     } catch (err) {
         console.error('Ошибка:', err);
-        res.status(500).json({ error: 'Ошибка сервера' });
+        res.status(500).json({error: 'Ошибка сервера'});
     }
 });
+
 async function getCurrencyRates() {
     try {
         const client = await pool.connect();
@@ -255,6 +256,7 @@ async function getCurrencyRates() {
         return null;
     }
 }
+
 app.get('/api/announcements', async (req, res) => {
     try {
         const client = await pool.connect();
@@ -263,7 +265,7 @@ app.get('/api/announcements', async (req, res) => {
 
         if (!currencyRates) {
             client.release();
-            return res.status(500).json({ error: 'Курсы валют не найдены' });
+            return res.status(500).json({error: 'Курсы валют не найдены'});
         }
 
         const announcementsWithConvertedPrices = announcements.rows.map(announcement => ({
@@ -293,7 +295,7 @@ app.put('/api/announcements/:id', upload.array('photos', 5), async (req, res) =>
         fuelType,
         fuelSubtype,
         part,
-        price // Новое поле
+        price
     } = req.body;
 
     const photosToDelete = JSON.parse(req.body.photosToDelete || '[]');
@@ -315,8 +317,19 @@ app.put('/api/announcements/:id', upload.array('photos', 5), async (req, res) =>
 
         const query = `
             UPDATE announcements
-            SET brand = $1, year = $2, model = $3, engine_volume = $4, transmission = $5, body_type = $6,
-                description = $7, part_number = $8, fuel_type = $9, fuel_subtype = $10, photos = $11, part = $12, price = $13
+            SET brand         = $1,
+                year          = $2,
+                model         = $3,
+                engine_volume = $4,
+                transmission  = $5,
+                body_type     = $6,
+                description   = $7,
+                part_number   = $8,
+                fuel_type     = $9,
+                fuel_subtype  = $10,
+                photos        = $11,
+                part          = $12,
+                price         = $13
             WHERE id = $14
         `;
 
@@ -340,10 +353,10 @@ app.put('/api/announcements/:id', upload.array('photos', 5), async (req, res) =>
         await client.query(query, values);
         client.release();
 
-        res.status(200).json({ success: true });
+        res.status(200).json({success: true});
     } catch (err) {
         console.error('Ошибка:', err);
-        res.status(500).json({ success: false, error: err.message });
+        res.status(500).json({success: false, error: err.message});
     }
 });
 
@@ -369,20 +382,20 @@ app.get('/api/currency-rates', async (req, res) => {
         if (result.rows.length > 0) {
             res.json(result.rows[0]);
         } else {
-            res.status(404).json({ error: 'Курсы валют не найдены' });
+            res.status(404).json({error: 'Курсы валют не найдены'});
         }
     } catch (err) {
         console.error('Ошибка при получении курсов валют:', err);
-        res.status(500).json({ error: 'Ошибка сервера' });
+        res.status(500).json({error: 'Ошибка сервера'});
     }
 });
 
 // Обновить курсы валют
 app.post('/api/currency-rates', async (req, res) => {
-    const { eur, usd, rub } = req.body;
+    const {eur, usd, rub} = req.body;
 
     if (!eur || !usd || !rub) {
-        return res.status(400).json({ error: 'Все поля обязательны' });
+        return res.status(400).json({error: 'Все поля обязательны'});
     }
 
     try {
@@ -393,10 +406,10 @@ app.post('/api/currency-rates', async (req, res) => {
         );
         client.release();
 
-        res.status(200).json({ success: true });
+        res.status(200).json({success: true});
     } catch (err) {
         console.error('Ошибка при обновлении курсов валют:', err);
-        res.status(500).json({ error: 'Ошибка сервера' });
+        res.status(500).json({error: 'Ошибка сервера'});
     }
 });
 app.listen(PORT, () => {

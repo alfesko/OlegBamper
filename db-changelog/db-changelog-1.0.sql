@@ -1,9 +1,9 @@
 CREATE TABLE users
-(
-    id       SERIAL PRIMARY KEY,
-    username VARCHAR(100) UNIQUE NOT NULL,
-    password TEXT                NOT NULL
-);
+  (
+      id       SERIAL PRIMARY KEY,
+      username VARCHAR(100) UNIQUE NOT NULL,
+      password TEXT                NOT NULL
+  );
 CREATE TABLE "session"
 (
     "sid"    varchar      NOT NULL COLLATE "default",
@@ -37,17 +37,23 @@ ALTER TABLE announcements
 ALTER TABLE announcements
     ADD COLUMN part_number VARCHAR(50);
 ALTER TABLE announcements
-DROP COLUMN photo;
-ALTER TABLE announcements ADD COLUMN fuel_type VARCHAR(50);
-ALTER TABLE announcements ADD COLUMN fuel_subtype VARCHAR(50);
+DROP
+COLUMN photo;
+ALTER TABLE announcements
+    ADD COLUMN fuel_type VARCHAR(50);
+ALTER TABLE announcements
+    ADD COLUMN fuel_subtype VARCHAR(50);
 ALTER TABLE announcements
     ADD COLUMN part VARCHAR(50);
 ALTER TABLE announcements
     ADD COLUMN price NUMERIC(10, 2);
-CREATE TABLE currency_rates (
-                                id SERIAL PRIMARY KEY,
-                                eur_to_byn NUMERIC(10, 4) NOT NULL,
-                                usd_to_byn NUMERIC(10, 4) NOT NULL,
-                                rub_to_byn NUMERIC(10, 4) NOT NULL,
-                                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE currency_rates
+(
+    id         SERIAL PRIMARY KEY,
+    eur_to_byn NUMERIC(10, 4) NOT NULL,
+    usd_to_byn NUMERIC(10, 4) NOT NULL,
+    rub_to_byn NUMERIC(10, 4) NOT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+ALTER TABLE announcements
+    ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
