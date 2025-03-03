@@ -57,3 +57,5 @@ CREATE TABLE currency_rates
 );
 ALTER TABLE announcements
     ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE announcements
+    ADD COLUMN article VARCHAR(8) UNIQUE;

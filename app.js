@@ -67,6 +67,16 @@ const storage = multer.diskStorage({
 
 const upload = multer({storage: storage});
 
+function generateArticle() {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let article = '';
+    for (let i = 0; i < 8; i++) {
+        const randomIndex = Math.floor(Math.random() * characters.length);
+        article += characters[randomIndex];
+    }
+    return article;
+}
+
 app.post('/announcement', upload.array('photos', 5), (req, res) => {
     const {
         brand,
@@ -84,11 +94,12 @@ app.post('/announcement', upload.array('photos', 5), (req, res) => {
     } = req.body;
 
     const photoPaths = req.files.map(file => file.path);
+    const article = generateArticle();
 
     const query = `
         INSERT INTO announcements (brand, year, model, engine_volume, transmission, body_type,
-                                   description, part_number, photos, fuel_type, fuel_subtype, part, price)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+                                   description, part_number, photos, fuel_type, fuel_subtype, part, price, article)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
     `;
 
     const values = [
@@ -104,8 +115,15 @@ app.post('/announcement', upload.array('photos', 5), (req, res) => {
         fuelType,
         fuelSubtype,
         part,
-        price // Новое значение
+        price,
+        article
     ];
+
+    async function isArticleUnique(article) {
+        const query = 'SELECT * FROM announcements WHERE article = $1';
+        const result = await pool.query(query, [article]);
+        return result.rows.length === 0; // Если артикул не найден, он уникален
+    }
 
     pool.query(query, values, (err) => {
         if (err) {
