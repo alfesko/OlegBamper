@@ -407,8 +407,97 @@ app.get('/api/currency-rates', async (req, res) => {
         res.status(500).json({error: 'Ошибка сервера'});
     }
 });
+app.get('/search', async (req, res) => {
+    const {
+        brand,
+        year,
+        model,
+        engineVolume,
+        transmission,
+        bodyType,
+        fuelType,
+        fuelSubtype,
+        article,
+        part,
+        partNumber
+    } = req.query;
 
-// Обновить курсы валют
+    try {
+        const client = await pool.connect();
+
+        let query = 'SELECT * FROM announcements WHERE 1=1';
+        const values = [];
+
+        if (brand) {
+            query += ' AND brand ILIKE $' + (values.length + 1);
+            values.push(`%${brand}%`);
+        }
+        if (year) {
+            query += ' AND year = $' + (values.length + 1);
+            values.push(year);
+        }
+        if (model) {
+            query += ' AND model ILIKE $' + (values.length + 1);
+            values.push(`%${model}%`);
+        }
+        if (engineVolume) {
+            query += ' AND engine_volume = $' + (values.length + 1);
+            values.push(engineVolume);
+        }
+        if (transmission) {
+            query += ' AND transmission = $' + (values.length + 1);
+            values.push(transmission);
+        }
+        if (bodyType) {
+            query += ' AND body_type = $' + (values.length + 1);
+            values.push(bodyType);
+        }
+        if (fuelType) {
+            query += ' AND fuel_type = $' + (values.length + 1);
+            values.push(fuelType);
+        }
+        if (fuelSubtype) {
+            query += ' AND fuel_subtype = $' + (values.length + 1);
+            values.push(fuelSubtype);
+        }
+        if (article) {
+            query += ' AND article = $' + (values.length + 1);
+            values.push(article);
+        }
+        if (part) {
+            query += ' AND part ILIKE $' + (values.length + 1);
+            values.push(`%${part}%`);
+        }
+        if (partNumber) {
+            query += ' AND part_number = $' + (values.length + 1);
+            values.push(partNumber);
+        }
+
+        const announcements = await client.query(query, values);
+
+        const currencyRates = await client.query('SELECT * FROM currency_rates ORDER BY updated_at DESC LIMIT 1');
+        client.release();
+
+        if (!currencyRates.rows.length) {
+            return res.status(500).json({ error: 'Курсы валют не найдены' });
+        }
+
+        const { eur_to_byn, usd_to_byn, rub_to_byn } = currencyRates.rows[0];
+
+        const results = announcements.rows.map(announcement => ({
+            ...announcement,
+            price_usd: announcement.price, // Цена в USD
+            price_eur: (announcement.price * usd_to_byn / eur_to_byn).toFixed(2), // USD -> EUR
+            price_byn: (announcement.price * usd_to_byn).toFixed(2), // USD -> BYN
+            price_rub: (announcement.price * usd_to_byn / rub_to_byn * 100).toFixed(2) // USD -> RUB (100 RUB = X BYN)
+        }));
+
+        res.json(results);
+    } catch (err) {
+        console.error('Ошибка при поиске объявлений:', err);
+        res.status(500).json({ error: 'Ошибка сервера' });
+    }
+});
 app.post('/api/currency-rates', async (req, res) => {
     const {eur, usd, rub} = req.body;
 
