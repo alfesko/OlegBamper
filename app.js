@@ -390,7 +390,7 @@ app.delete('/api/announcements/:id', async (req, res) => {
         res.status(500).send('Ошибка при удалении объявления');
     }
 });
-// Получить текущие курсы валют
+
 app.get('/api/currency-rates', async (req, res) => {
     try {
         const client = await pool.connect();

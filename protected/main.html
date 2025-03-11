@@ -9091,13 +9091,15 @@
         fetch('/api/announcements')
             .then(response => response.json())
             .then(data => {
+
                 const announcementsContainer = document.getElementById('announcements');
                 announcementsContainer.innerHTML = '';
 
                 data.forEach(announcement => {
+                    const date = new Date(announcement.created_at);
+                    const formattedDate = `${date.getDate().toString().padStart(2, '0')}.${(date.getMonth() + 1).toString().padStart(2, '0')}.${date.getFullYear()} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
                     const announcementElement = document.createElement('div');
                     announcementElement.classList.add('announcement-item');
-
                     announcementElement.innerHTML = `
                         <h3>${announcement.brand} - ${announcement.model}</h3>
                         <p>Год: ${announcement.year}</p>
@@ -9111,7 +9113,7 @@
                         <p>Запчасть: ${announcement.part}</p>
                         <p>Цена:<br> ${announcement.price} USD <br> ${announcement.price_eur} EUR <br> ${announcement.price_rub} RUB <br> ${announcement.price_byn} BYN</p>
                        <p>Артикул: ${announcement.article}</p>
-                        <p>Дата: ${announcement.created_at}</p>
+                       <p>Дата: ${formattedDate}</p>
                         <div class="announcement-actions">
                             <button class="edit-btn" data-id="${announcement.id}" style="display: none;">Редактировать</button>
                             <button class="delete-btn" data-id="${announcement.id}" style="display: none;">Удалить</button>
@@ -9189,7 +9191,7 @@
                 fetch(`/api/announcements/${id}`, {method: 'DELETE'})
                     .then(response => {
                         if (response.ok) {
-                            window.location.reload(); // Перезагружаем страницу после удаления
+                            window.location.reload();
                         }
                     })
                     .catch(error => console.error('Ошибка:', error));
@@ -9219,7 +9221,6 @@
             autocompleteContainer.appendChild(div);
         });
     }
-
 
 
     document.querySelector('.search-form').addEventListener('submit', async (e) => {
@@ -9280,7 +9281,8 @@
         sortedResults.forEach(announcement => {
             const announcementElement = document.createElement('div');
             announcementElement.classList.add('announcement-item');
-
+            const date = new Date(announcement.created_at);
+            const formattedDate = `${date.getDate().toString().padStart(2, '0')}.${(date.getMonth() + 1).toString().padStart(2, '0')}.${date.getFullYear()} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
             announcementElement.innerHTML = `
             <h3>${announcement.brand} - ${announcement.model}</h3>
             <p>Год: ${announcement.year}</p>
@@ -9298,6 +9300,7 @@
                ${announcement.price_rub} RUB <br>
                ${announcement.price_byn} BYN</p>
             <p>Артикул: ${announcement.article}</p>
+                   <p>Дата: ${formattedDate}</p>
             <div class="announcement-actions">
                 <button class="edit-btn" data-id="${announcement.id}" style="display: ${isLoggedIn ? 'inline-block' : 'none'};">Редактировать</button>
                 <button class="delete-btn" data-id="${announcement.id}" style="display: ${isLoggedIn ? 'inline-block' : 'none'};">Удалить</button>
