@@ -53,6 +53,13 @@
         <button type="submit">Сохранить курсы</button>
     </form>
 </div>
+<label for="sort">Сортировать по:</label>
+<select id="sort" name="sort">
+    <option value="price_asc">Цена (по возрастанию)</option>
+    <option value="price_desc">Цена (по убыванию)</option>
+    <option value="date_asc">Дата (сначала старые)</option>
+    <option value="date_desc">Дата (сначала новые)</option>
+</select>
 <h2>Объявления</h2>
 <div class="main-content">
     <div class="container">
@@ -9104,6 +9111,7 @@
                         <p>Запчасть: ${announcement.part}</p>
                         <p>Цена:<br> ${announcement.price} USD <br> ${announcement.price_eur} EUR <br> ${announcement.price_rub} RUB <br> ${announcement.price_byn} BYN</p>
                        <p>Артикул: ${announcement.article}</p>
+                        <p>Дата: ${announcement.created_at}</p>
                         <div class="announcement-actions">
                             <button class="edit-btn" data-id="${announcement.id}" style="display: none;">Редактировать</button>
                             <button class="delete-btn" data-id="${announcement.id}" style="display: none;">Удалить</button>
@@ -9233,6 +9241,21 @@
         }
     });
 
+    function sortAnnouncements(announcements, sortType) {
+        switch (sortType) {
+            case 'price_asc':
+                return announcements.sort((a, b) => a.price - b.price);
+            case 'price_desc':
+                return announcements.sort((a, b) => b.price - a.price);
+            case 'date_asc':
+                return announcements.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+            case 'date_desc':
+                return announcements.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+            default:
+                return announcements;
+        }
+    }
+
     async function displaySearchResults(results) {
         const announcementsContainer = document.getElementById('announcements');
         announcementsContainer.innerHTML = '';
@@ -9242,7 +9265,9 @@
             return;
         }
 
-        // Проверяем, авторизован ли пользователь
+        const sortType = document.getElementById('sort').value;
+        const sortedResults = sortAnnouncements(results, sortType);
+
         let isLoggedIn = false;
         try {
             const authResponse = await fetch('/auth-status');
@@ -9252,7 +9277,7 @@
             console.error('Ошибка при проверке авторизации:', error);
         }
 
-        results.forEach(announcement => {
+        sortedResults.forEach(announcement => {
             const announcementElement = document.createElement('div');
             announcementElement.classList.add('announcement-item');
 
@@ -9279,7 +9304,6 @@
             </div>
         `;
 
-            // Отображение фотографий
             if (Array.isArray(announcement.photos) && announcement.photos.length > 0) {
                 const sliderContainer = document.createElement('div');
                 sliderContainer.classList.add('slider-container');
