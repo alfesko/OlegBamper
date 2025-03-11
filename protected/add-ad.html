@@ -34,7 +34,7 @@
         <form action="/announcement" method="POST" enctype="multipart/form-data">
             <label for="brand">Марка:</label>
             <input type="text" id="brand" name="brand" autocomplete="off" oninput="handleBrandInput(this.value)">
-            <div id="brand-autocomplete" class="autocomplete-items"></div>
+            <div id="brand-autocomplete" class="autocomplete-items" ></div>
             <label for="year">Год выпуска:</label>
             <input type="text" id="year" name="year" autocomplete="off" oninput="handleYearInput(this.value)">
             <div id="year-autocomplete" class="autocomplete-items"></div>
@@ -46,17 +46,17 @@
                    oninput="handleModelInput(this.value)">
             <div id="model-autocomplete" class="autocomplete-items"></div>
             <label for="engineVolume">Объем:</label>
-            <input type="text" id="engineVolume" name="engineVolume" required>
+            <input type="text" id="engineVolume" name="engineVolume">
             <div class="form-row">
                 <label for="transmission">Коробка:</label>
-                <select id="transmission" name="transmission" required>
+                <select id="transmission" name="transmission">
                     <option value="АКПП">АКПП</option>
                     <option value="МКПП">МКПП</option>
                     <option value="РОБОТ">Робот</option>
                     <option value="ВАРИАТОР">Вариатор</option>
                 </select>
                 <label for="bodyType">Кузов:</label>
-                <select id="bodyType" name="bodyType" required>
+                <select id="bodyType" name="bodyType">
                     <option value="Седан">Седан</option>
                     <option value="Универсал">Универсал</option>
                     <option value="хэтчбек">Хэтчбек</option>
@@ -76,7 +76,7 @@
                     <option value="погрузчик">Погрузчик</option>
                 </select>
             </div>
-            <select id="fuelType" name="fuelType" required onchange="updateFuelSubtype()">
+            <select id="fuelType" name="fuelType"  onchange="updateFuelSubtype()">
                 <option value="" disabled selected>Выберите тип топлива</option>
                 <option value="бензин">Бензин</option>
                 <option value="дизель">Дизель</option>
@@ -88,9 +88,9 @@
             <select id="fuelSubtype" name="fuelSubtype" style="display:none;">
             </select>
             <label for="description">Описание:</label>
-            <input type="text" id="description" name="description" required>
+            <input type="text" id="description" name="description">
             <label for="partNumber">Номер запчасти:</label>
-            <input type="text" id="partNumber" name="partNumber" required>
+            <input type="text" id="partNumber" name="partNumber">
             <label for="price">Цена (USD):</label>
             <input type="number" id="price" name="price" step="1" min="0" required>
             <label for="photos">Фото объявления:</label>
@@ -108,6 +108,7 @@
     <p>© ИП Щука О.Е., УНП 590236855, 22.04.2004, shchuka1971@mail.ru</p>
 </div>
 <script>
+
     const parts = [
         {
             "value": "CD-чейнджер",

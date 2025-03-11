@@ -486,10 +486,10 @@ app.get('/search', async (req, res) => {
 
         const results = announcements.rows.map(announcement => ({
             ...announcement,
-            price_usd: announcement.price, // Цена в USD
-            price_eur: (announcement.price * usd_to_byn / eur_to_byn).toFixed(2), // USD -> EUR
-            price_byn: (announcement.price * usd_to_byn).toFixed(2), // USD -> BYN
-            price_rub: (announcement.price * usd_to_byn / rub_to_byn * 100).toFixed(2) // USD -> RUB (100 RUB = X BYN)
+            price_usd: announcement.price,
+            price_eur: (announcement.price * usd_to_byn / eur_to_byn).toFixed(2),
+            price_byn: (announcement.price * usd_to_byn).toFixed(2),
+            price_rub: (announcement.price * usd_to_byn / rub_to_byn * 100).toFixed(2)
         }));
 
         res.json(results);
