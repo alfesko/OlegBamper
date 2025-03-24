@@ -27,6 +27,30 @@ app.use(express.urlencoded({extended: true}));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(__dirname));
+app.get('/register', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'register.html'));
+});
+
+app.post('/register', async (req, res) => {
+    const {username, password} = req.body;
+
+    if (!username || !password) {
+        return res.status(400).send('Заполните все поля.');
+    }
+
+    try {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const client = await pool.connect();
+
+        await client.query('INSERT INTO users (username, password) VALUES ($1, $2)', [username, hashedPassword]);
+        client.release();
+
+        res.redirect('/login');
+    } catch (err) {
+        console.error('Ошибка при регистрации:', err);
+        res.status(500).send('Ошибка сервера.');
+    }
+});
 
 async function hashPassword(password) {
     return await bcrypt.hash(password, 10);
@@ -479,10 +503,10 @@ app.get('/search', async (req, res) => {
         client.release();
 
         if (!currencyRates.rows.length) {
-            return res.status(500).json({ error: 'Курсы валют не найдены' });
+            return res.status(500).json({error: 'Курсы валют не найдены'});
         }
 
-        const { eur_to_byn, usd_to_byn, rub_to_byn } = currencyRates.rows[0];
+        const {eur_to_byn, usd_to_byn, rub_to_byn} = currencyRates.rows[0];
 
         const results = announcements.rows.map(announcement => ({
             ...announcement,
@@ -495,7 +519,7 @@ app.get('/search', async (req, res) => {
         res.json(results);
     } catch (err) {
         console.error('Ошибка при поиске объявлений:', err);
-        res.status(500).json({ error: 'Ошибка сервера' });
+        res.status(500).json({error: 'Ошибка сервера'});
     }
 });
 app.post('/api/currency-rates', async (req, res) => {

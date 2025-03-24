@@ -9,6 +9,7 @@
     border-radius: 5px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
+
 #sort {
     padding: 8px;
     border: 1px solid #ccc;
@@ -21,6 +22,7 @@ label[for="sort"] {
     font-weight: bold;
     margin-right: 10px;
 }
+
 .currency-edit label {
     font-weight: bold;
 }
@@ -266,6 +268,20 @@ button:hover {
     text-align: center;
     margin-top: 5px;
     margin-bottom: 10px;
+}
+
+.button-link {
+    display: inline-block;
+    padding: 10px 15px;
+    text-decoration: none;
+    background-color: #4b4b4b;
+    color: white;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+.button-link:hover {
+    background-color: rgba(0, 0, 0, 0.5);
 }
 
 .address-info p {
