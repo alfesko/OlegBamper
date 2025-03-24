@@ -217,7 +217,10 @@ app.get('/logout', (req, res) => {
 });
 
 app.get('/auth-status', (req, res) => {
-    res.json({loggedIn: !!req.session.loggedIn});
+    res.json({
+        loggedIn: !!req.session.loggedIn,
+        userId: req.session.userId || null
+    });
 });
 
 app.get('/', (req, res) => {
@@ -308,26 +311,33 @@ async function getCurrencyRates() {
 app.get('/api/announcements', async (req, res) => {
     try {
         const client = await pool.connect();
-        const announcements = await client.query('SELECT * FROM announcements');
-        const currencyRates = await getCurrencyRates(); // Получаем курсы валют
+        const query = `
+            SELECT a.*, 
+                   (a.user_id = $1) AS is_owner
+            FROM announcements a
+            ORDER BY a.created_at DESC
+        `;
+        const result = await client.query(query, [req.session.userId || null]);
+        client.release();
+
+        const announcements = result.rows;
+        const currencyRates = await getCurrencyRates();
 
         if (!currencyRates) {
-            client.release();
             return res.status(500).json({error: 'Курсы валют не найдены'});
         }
 
-        const announcementsWithConvertedPrices = announcements.rows.map(announcement => ({
+        const announcementsWithPrices = announcements.map(announcement => ({
             ...announcement,
             price_eur: (announcement.price * currencyRates.usd_to_byn / currencyRates.eur_to_byn).toFixed(2),
             price_byn: (announcement.price * currencyRates.usd_to_byn).toFixed(2),
             price_rub: (announcement.price * currencyRates.usd_to_byn / currencyRates.rub_to_byn * 100).toFixed(2)
         }));
 
-        client.release();
-        res.json(announcementsWithConvertedPrices);
+        res.json(announcementsWithPrices);
     } catch (err) {
-        console.error('Ошибка при получении объявлений:', err);
-        res.status(500).send('Ошибка при получении объявлений');
+        console.error('Ошибка:', err);
+        res.status(500).json({error: 'Ошибка сервера'});
     }
 });
 app.put('/api/announcements/:id', upload.array('photos', 5), async (req, res) => {
@@ -463,15 +473,22 @@ app.get('/search', async (req, res) => {
     try {
         const client = await pool.connect();
 
-        let query = 'SELECT * FROM announcements WHERE 1=1';
-        const values = [];
+        let query = `
+            SELECT a.*, 
+                   (a.user_id = $1) AS is_owner
+            FROM announcements a
+            WHERE 1=1
+        `;
+        const values = [req.session.userId || null];
+        let paramIndex = 2;
 
+        // Добавляем условия поиска
         if (brand) {
-            query += ' AND brand ILIKE $' + (values.length + 1);
+            query += ` AND brand ILIKE $${paramIndex++}`;
             values.push(`%${brand}%`);
         }
         if (year) {
-            query += ' AND year = $' + (values.length + 1);
+            query += ` AND year = $${paramIndex++}`;
             values.push(year);
         }
         if (model) {
@@ -512,7 +529,6 @@ app.get('/search', async (req, res) => {
         }
 
         const announcements = await client.query(query, values);
-
         const currencyRates = await client.query('SELECT * FROM currency_rates ORDER BY updated_at DESC LIMIT 1');
         client.release();
 

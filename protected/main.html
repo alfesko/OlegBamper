@@ -74,8 +74,7 @@
             <div id="year-autocomplete" class="autocomplete-items"></div>
 
             <label for="model">Модель:</label>
-            <input type="text" id="model" name="model" autocomplete="off"
-                   oninput="handleModelInput(this.value)">
+            <input type="text" id="model" name="model" autocomplete="off" oninput="handleModelInput(this.value)">
             <div id="model-autocomplete" class="autocomplete-items"></div>
 
             <label for="engineVolume">Объем:</label>
@@ -9034,13 +9033,162 @@
             "label": "Ящик для инструментов"
         }
     ];
-    const partSelect = document.getElementById('part');
 
-    parts.forEach(part => {
-        const option = document.createElement('option');
-        option.value = part.value;
-        option.textContent = part.label;
-        partSelect.appendChild(option);
+    async function checkUserStatus() {
+        try {
+            const response = await fetch('/auth-status');
+            return await response.json();
+        } catch (error) {
+            console.error('Ошибка при проверке статуса:', error);
+            return { loggedIn: false, userId: null };
+        }
+    }
+
+    async function displayAnnouncements(announcements, currentUserId) {
+        const announcementsContainer = document.getElementById('announcements');
+        announcementsContainer.innerHTML = '';
+
+        if (announcements.length === 0) {
+            announcementsContainer.innerHTML = '<p>Объявлений не найдено.</p>';
+            return;
+        }
+
+        for (const announcement of announcements) {
+            const isOwner = currentUserId && announcement.user_id === currentUserId;
+            const date = new Date(announcement.created_at);
+            const formattedDate = `${date.getDate().toString().padStart(2, '0')}.${(date.getMonth() + 1).toString().padStart(2, '0')}.${date.getFullYear()} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+
+            const announcementElement = document.createElement('div');
+            announcementElement.classList.add('announcement-item');
+            announcementElement.innerHTML = `
+                <h3>${announcement.brand} - ${announcement.model}</h3>
+                <p>Год: ${announcement.year}</p>
+                <p>Объем: ${announcement.engine_volume}</p>
+                <p>Коробка: ${announcement.transmission}</p>
+                <p>Кузов: ${announcement.body_type}</p>
+                <p>Тип топлива: ${announcement.fuel_type}</p>
+                <p>Подтип топлива: ${announcement.fuel_subtype}</p>
+                <p>Описание: ${announcement.description}</p>
+                <p>Номер запчасти: ${announcement.part_number}</p>
+                <p>Запчасть: ${announcement.part}</p>
+                <p>Цена:<br> ${announcement.price} USD <br> ${announcement.price_eur} EUR <br> ${announcement.price_rub} RUB <br> ${announcement.price_byn} BYN</p>
+                <p>Артикул: ${announcement.article}</p>
+                <p>Дата: ${formattedDate}</p>
+                <div class="announcement-actions">
+                    <button class="edit-btn" data-id="${announcement.id}" style="display: ${isOwner ? 'inline-block' : 'none'}">Редактировать</button>
+                    <button class="delete-btn" data-id="${announcement.id}" style="display: ${isOwner ? 'inline-block' : 'none'}">Удалить</button>
+                </div>
+            `;
+
+            if (Array.isArray(announcement.photos) && announcement.photos.length > 0) {
+                const sliderContainer = document.createElement('div');
+                sliderContainer.classList.add('slider-container');
+
+                const slider = document.createElement('div');
+                slider.classList.add('slider');
+
+                announcement.photos.forEach(photoPath => {
+                    const img = document.createElement('img');
+                    img.src = photoPath;
+                    img.alt = "Фото объявления";
+                    slider.appendChild(img);
+                });
+
+                const prevBtn = document.createElement('button');
+                prevBtn.classList.add('prev-btn');
+                prevBtn.innerHTML = '&#10094;';
+
+                const nextBtn = document.createElement('button');
+                nextBtn.classList.add('next-btn');
+                nextBtn.innerHTML = '&#10095;';
+
+                sliderContainer.appendChild(slider);
+                sliderContainer.appendChild(prevBtn);
+                sliderContainer.appendChild(nextBtn);
+                announcementElement.appendChild(sliderContainer);
+
+                let currentIndex = 0;
+                const slides = slider.querySelectorAll('img');
+
+                function showSlide(index) {
+                    slides.forEach((slide, i) => {
+                        slide.style.display = i === index ? 'block' : 'none';
+                    });
+                }
+
+                prevBtn.addEventListener('click', () => {
+                    currentIndex = (currentIndex > 0) ? currentIndex - 1 : slides.length - 1;
+                    showSlide(currentIndex);
+                });
+
+                nextBtn.addEventListener('click', () => {
+                    currentIndex = (currentIndex < slides.length - 1) ? currentIndex + 1 : 0;
+                    showSlide(currentIndex);
+                });
+
+                showSlide(0);
+            }
+
+            announcementsContainer.appendChild(announcementElement);
+        }
+    }
+
+    window.onload = async function() {
+        try {
+            const [announcementsResponse, authData] = await Promise.all([
+                fetch('/api/announcements'),
+                checkUserStatus()
+            ]);
+
+            const announcements = await announcementsResponse.json();
+            await displayAnnouncements(announcements, authData.userId);
+
+            const authButton = document.getElementById('auth-button');
+            authButton.textContent = authData.loggedIn ? 'Выйти' : 'Войти';
+            authButton.onclick = authData.loggedIn ? logout : () => window.location.href = '/login';
+        } catch (error) {
+            console.error('Ошибка при загрузке объявлений:', error);
+        }
+    };
+
+    async function logout() {
+        try {
+            await fetch('/logout', { method: 'GET' });
+            window.location.reload();
+        } catch (error) {
+            console.error('Ошибка при выходе:', error);
+        }
+    }
+
+    async function redirectToLoginOrAddAd() {
+        try {
+            const authData = await checkUserStatus();
+            window.location.href = authData.loggedIn ? '/add-ad' : '/login';
+        } catch (error) {
+            console.error('Ошибка при проверке авторизации:', error);
+            window.location.href = '/login';
+        }
+    }
+
+    document.addEventListener('click', async function(event) {
+        if (event.target.classList.contains('delete-btn')) {
+            const id = event.target.dataset.id;
+            if (confirm('Вы уверены, что хотите удалить объявление?')) {
+                try {
+                    const response = await fetch(`/api/announcements/${id}`, { method: 'DELETE' });
+                    if (response.ok) {
+                        window.location.reload();
+                    }
+                } catch (error) {
+                    console.error('Ошибка при удалении объявления:', error);
+                }
+            }
+        }
+
+        if (event.target.classList.contains('edit-btn')) {
+            const id = event.target.dataset.id;
+            window.location.href = `/edit-announcement/${id}`;
+        }
     });
 
     function updateFuelSubtype() {
@@ -9087,122 +9235,6 @@
         }
     }
 
-    window.onload = function () {
-        fetch('/api/announcements')
-            .then(response => response.json())
-            .then(data => {
-
-                const announcementsContainer = document.getElementById('announcements');
-                announcementsContainer.innerHTML = '';
-
-                data.forEach(announcement => {
-                    const date = new Date(announcement.created_at);
-                    const formattedDate = `${date.getDate().toString().padStart(2, '0')}.${(date.getMonth() + 1).toString().padStart(2, '0')}.${date.getFullYear()} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
-                    const announcementElement = document.createElement('div');
-                    announcementElement.classList.add('announcement-item');
-                    announcementElement.innerHTML = `
-                        <h3>${announcement.brand} - ${announcement.model}</h3>
-                        <p>Год: ${announcement.year}</p>
-                        <p>Объем: ${announcement.engine_volume}</p>
-                        <p>Коробка: ${announcement.transmission}</p>
-                        <p>Кузов: ${announcement.body_type}</p>
-                        <p>Тип топлива: ${announcement.fuel_type}</p>
-                        <p>Подтип топлива: ${announcement.fuel_subtype}</p>
-                        <p>Описание: ${announcement.description}</p>
-                        <p>Номер запчасти: ${announcement.part_number}</p>
-                        <p>Запчасть: ${announcement.part}</p>
-                        <p>Цена:<br> ${announcement.price} USD <br> ${announcement.price_eur} EUR <br> ${announcement.price_rub} RUB <br> ${announcement.price_byn} BYN</p>
-                       <p>Артикул: ${announcement.article}</p>
-                       <p>Дата: ${formattedDate}</p>
-                        <div class="announcement-actions">
-                            <button class="edit-btn" data-id="${announcement.id}" style="display: none;">Редактировать</button>
-                            <button class="delete-btn" data-id="${announcement.id}" style="display: none;">Удалить</button>
-                        </div>
-                    `;
-
-                    if (Array.isArray(announcement.photos) && announcement.photos.length > 0) {
-                        const sliderContainer = document.createElement('div');
-                        sliderContainer.classList.add('slider-container');
-
-                        const slider = document.createElement('div');
-                        slider.classList.add('slider');
-
-                        announcement.photos.forEach(photoPath => {
-                            const img = document.createElement('img');
-                            img.src = photoPath;
-                            img.alt = "Фото объявления";
-                            slider.appendChild(img);
-                        });
-
-                        const prevBtn = document.createElement('button');
-                        prevBtn.classList.add('prev-btn');
-                        prevBtn.innerHTML = '&#10094;';
-
-                        const nextBtn = document.createElement('button');
-                        nextBtn.classList.add('next-btn');
-                        nextBtn.innerHTML = '&#10095;';
-
-                        sliderContainer.appendChild(slider);
-                        sliderContainer.appendChild(prevBtn);
-                        sliderContainer.appendChild(nextBtn);
-                        announcementElement.appendChild(sliderContainer);
-
-                        let currentIndex = 0;
-
-                        function showSlide(index) {
-                            const slideWidth = slider.clientWidth;
-                            slider.style.transform = `translateX(${-index * slideWidth}px)`;
-                        }
-
-                        prevBtn.addEventListener('click', () => {
-                            currentIndex = (currentIndex > 0) ? currentIndex - 1 : announcement.photos.length - 1;
-                            showSlide(currentIndex);
-                        });
-
-                        nextBtn.addEventListener('click', () => {
-                            currentIndex = (currentIndex < announcement.photos.length - 1) ? currentIndex + 1 : 0;
-                            showSlide(currentIndex);
-                        });
-
-                        window.addEventListener('resize', () => showSlide(currentIndex));
-                    }
-
-                    announcementsContainer.appendChild(announcementElement);
-                });
-
-                fetch('/auth-status')
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.loggedIn) {
-                            document.querySelectorAll('.delete-btn, .edit-btn').forEach(button => {
-                                button.style.display = 'inline-block';
-                            });
-                        }
-                    });
-            })
-            .catch(error => console.error('Ошибка:', error));
-    };
-
-    document.addEventListener('click', function (event) {
-        const id = event.target.dataset.id;
-
-        if (event.target.classList.contains('delete-btn')) {
-            if (confirm('Вы уверены, что хотите удалить объявление?')) {
-                fetch(`/api/announcements/${id}`, {method: 'DELETE'})
-                    .then(response => {
-                        if (response.ok) {
-                            window.location.reload();
-                        }
-                    })
-                    .catch(error => console.error('Ошибка:', error));
-            }
-        }
-
-        if (event.target.classList.contains('edit-btn')) {
-            window.location.href = `/edit-announcement/${id}`;
-        }
-    });
-
     function handlePartInput(value) {
         const autocompleteContainer = document.getElementById('part-autocomplete');
         autocompleteContainer.innerHTML = '';
@@ -9214,14 +9246,13 @@
         filteredParts.forEach(part => {
             const div = document.createElement('div');
             div.innerHTML = part.label;
-            div.addEventListener('click', function () {
+            div.addEventListener('click', function() {
                 document.getElementById('part').value = part.label;
                 autocompleteContainer.innerHTML = '';
             });
             autocompleteContainer.appendChild(div);
         });
     }
-
 
     document.querySelector('.search-form').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -9233,7 +9264,8 @@
             const response = await fetch(`/search?${params.toString()}`);
             if (response.ok) {
                 const data = await response.json();
-                displaySearchResults(data);
+                const authData = await checkUserStatus();
+                displayAnnouncements(data, authData.userId);
             } else {
                 console.error('Ошибка при поиске');
             }
@@ -9245,117 +9277,16 @@
     function sortAnnouncements(announcements, sortType) {
         switch (sortType) {
             case 'price_asc':
-                return announcements.sort((a, b) => a.price - b.price);
+                return [...announcements].sort((a, b) => a.price - b.price);
             case 'price_desc':
-                return announcements.sort((a, b) => b.price - a.price);
+                return [...announcements].sort((a, b) => b.price - a.price);
             case 'date_asc':
-                return announcements.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+                return [...announcements].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
             case 'date_desc':
-                return announcements.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+                return [...announcements].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
             default:
-                return announcements;
+                return [...announcements];
         }
-    }
-
-    async function displaySearchResults(results) {
-        const announcementsContainer = document.getElementById('announcements');
-        announcementsContainer.innerHTML = '';
-
-        if (results.length === 0) {
-            announcementsContainer.innerHTML = '<p>Ничего не найдено.</p>';
-            return;
-        }
-
-        const sortType = document.getElementById('sort').value;
-        const sortedResults = sortAnnouncements(results, sortType);
-
-        let isLoggedIn = false;
-        try {
-            const authResponse = await fetch('/auth-status');
-            const authData = await authResponse.json();
-            isLoggedIn = authData.loggedIn;
-        } catch (error) {
-            console.error('Ошибка при проверке авторизации:', error);
-        }
-
-        sortedResults.forEach(announcement => {
-            const announcementElement = document.createElement('div');
-            announcementElement.classList.add('announcement-item');
-            const date = new Date(announcement.created_at);
-            const formattedDate = `${date.getDate().toString().padStart(2, '0')}.${(date.getMonth() + 1).toString().padStart(2, '0')}.${date.getFullYear()} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
-            announcementElement.innerHTML = `
-            <h3>${announcement.brand} - ${announcement.model}</h3>
-            <p>Год: ${announcement.year}</p>
-            <p>Объем: ${announcement.engine_volume}</p>
-            <p>Коробка: ${announcement.transmission}</p>
-            <p>Кузов: ${announcement.body_type}</p>
-            <p>Тип топлива: ${announcement.fuel_type}</p>
-            <p>Подтип топлива: ${announcement.fuel_subtype}</p>
-            <p>Описание: ${announcement.description}</p>
-            <p>Номер запчасти: ${announcement.part_number}</p>
-            <p>Запчасть: ${announcement.part}</p>
-            <p>Цена:<br>
-               ${announcement.price_usd} USD <br>
-               ${announcement.price_eur} EUR <br>
-               ${announcement.price_rub} RUB <br>
-               ${announcement.price_byn} BYN</p>
-            <p>Артикул: ${announcement.article}</p>
-                   <p>Дата: ${formattedDate}</p>
-            <div class="announcement-actions">
-                <button class="edit-btn" data-id="${announcement.id}" style="display: ${isLoggedIn ? 'inline-block' : 'none'};">Редактировать</button>
-                <button class="delete-btn" data-id="${announcement.id}" style="display: ${isLoggedIn ? 'inline-block' : 'none'};">Удалить</button>
-            </div>
-        `;
-
-            if (Array.isArray(announcement.photos) && announcement.photos.length > 0) {
-                const sliderContainer = document.createElement('div');
-                sliderContainer.classList.add('slider-container');
-
-                const slider = document.createElement('div');
-                slider.classList.add('slider');
-
-                announcement.photos.forEach(photoPath => {
-                    const img = document.createElement('img');
-                    img.src = photoPath;
-                    img.alt = "Фото объявления";
-                    slider.appendChild(img);
-                });
-
-                const prevBtn = document.createElement('button');
-                prevBtn.classList.add('prev-btn');
-                prevBtn.innerHTML = '&#10094;';
-
-                const nextBtn = document.createElement('button');
-                nextBtn.classList.add('next-btn');
-                nextBtn.innerHTML = '&#10095;';
-
-                sliderContainer.appendChild(slider);
-                sliderContainer.appendChild(prevBtn);
-                sliderContainer.appendChild(nextBtn);
-                announcementElement.appendChild(sliderContainer);
-
-                let currentIndex = 0;
-
-                function showSlide(index) {
-                    const slideWidth = slider.clientWidth;
-                    slider.style.transform = `translateX(${-index * slideWidth}px)`;
-                }
-
-                prevBtn.addEventListener('click', () => {
-                    currentIndex = (currentIndex > 0) ? currentIndex - 1 : announcement.photos.length - 1;
-                    showSlide(currentIndex);
-                });
-
-                nextBtn.addEventListener('click', () => {
-                    currentIndex = (currentIndex < announcement.photos.length - 1) ? currentIndex + 1 : 0;
-                    showSlide(currentIndex);
-                });
-
-                window.addEventListener('resize', () => showSlide(currentIndex));
-            }
-
-            announcementsContainer.appendChild(announcementElement);
-        });
     }
 
     document.getElementById('currencyForm').addEventListener('submit', async (e) => {
@@ -9378,6 +9309,7 @@
 
             if (response.ok) {
                 alert('Курсы валют успешно обновлены!');
+                window.location.reload();
             } else {
                 alert('Ошибка при обновлении курсов валют');
             }
@@ -9403,7 +9335,8 @@
         }
     }
 
-    window.addEventListener('load', loadCurrencyRates);
+    updateFuelSubtype();
+    loadCurrencyRates();
 </script>
 <script src="/scripts.js"></script>
 </body>
