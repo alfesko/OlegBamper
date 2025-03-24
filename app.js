@@ -101,7 +101,13 @@ function generateArticle() {
     return article;
 }
 
-app.post('/announcement', upload.array('photos', 5), (req, res) => {
+app.post('/announcement', upload.array('photos', 5), async (req, res) => {
+    if (!req.session.loggedIn) {
+        return res.status(401).send('Вы должны быть авторизованы для добавления объявления.');
+    }
+
+    const userId = req.session.userId;
+
     const {
         brand,
         year,
@@ -122,8 +128,9 @@ app.post('/announcement', upload.array('photos', 5), (req, res) => {
 
     const query = `
         INSERT INTO announcements (brand, year, model, engine_volume, transmission, body_type,
-                                   description, part_number, photos, fuel_type, fuel_subtype, part, price, article)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+                                   description, part_number, photos, fuel_type, fuel_subtype, part, price, article,
+                                   user_id)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
     `;
 
     const values = [
@@ -140,23 +147,19 @@ app.post('/announcement', upload.array('photos', 5), (req, res) => {
         fuelSubtype,
         part,
         price,
-        article
+        article,
+        userId
     ];
 
-    async function isArticleUnique(article) {
-        const query = 'SELECT * FROM announcements WHERE article = $1';
-        const result = await pool.query(query, [article]);
-        return result.rows.length === 0; // Если артикул не найден, он уникален
-    }
-
-    pool.query(query, values, (err) => {
-        if (err) {
-            console.error('Ошибка при добавлении объявления в базу данных:', err);
-            return res.status(500).send('Ошибка сервера');
-        }
+    try {
+        await pool.query(query, values);
         res.redirect('/');
-    });
+    } catch (err) {
+        console.error('Ошибка при добавлении объявления:', err);
+        res.status(500).send('Ошибка сервера');
+    }
 });
+
 app.get('/edit-announcement/:id', async (req, res) => {
     try {
         const client = await pool.connect();
@@ -181,11 +184,13 @@ app.post('/login', async (req, res) => {
         const client = await pool.connect();
         const result = await client.query('SELECT * FROM users WHERE username = $1', [username]);
         client.release();
+
         if (result.rows.length > 0) {
             const user = result.rows[0];
             const isPasswordMatch = await bcrypt.compare(password, user.password);
             if (isPasswordMatch) {
                 req.session.loggedIn = true;
+                req.session.userId = user.id; // Сохраняем ID пользователя
                 res.redirect('/');
             } else {
                 res.send('Неверные учетные данные');
@@ -198,6 +203,7 @@ app.post('/login', async (req, res) => {
         res.status(500).send('Ошибка при входе пользователя');
     }
 });
+
 
 app.get('/logout', (req, res) => {
     req.session.destroy(err => {
@@ -325,37 +331,40 @@ app.get('/api/announcements', async (req, res) => {
     }
 });
 app.put('/api/announcements/:id', upload.array('photos', 5), async (req, res) => {
-    const {
-        brand,
-        year,
-        model,
-        engineVolume,
-        transmission,
-        bodyType,
-        description,
-        partNumber,
-        fuelType,
-        fuelSubtype,
-        part,
-        price
-    } = req.body;
+    if (!req.session.loggedIn) {
+        return res.status(401).send('Вы должны быть авторизованы.');
+    }
 
-    const photosToDelete = JSON.parse(req.body.photosToDelete || '[]');
+    const userId = req.session.userId;
+    const {id} = req.params;
 
     try {
         const client = await pool.connect();
 
-        const result = await client.query('SELECT photos FROM announcements WHERE id = $1', [req.params.id]);
-        const currentPhotos = result.rows[0].photos || [];
-
-        const updatedPhotos = currentPhotos.filter((_, index) => !photosToDelete.includes(index));
-
-        let newPhotos = updatedPhotos;
-
-        if (req.files && req.files.length > 0) {
-            const newPhotoPaths = req.files.map(file => file.path);
-            newPhotos = updatedPhotos.concat(newPhotoPaths);
+        const result = await client.query('SELECT user_id FROM announcements WHERE id = $1', [id]);
+        if (result.rows.length === 0) {
+            client.release();
+            return res.status(404).send('Объявление не найдено');
         }
+        if (result.rows[0].user_id !== userId) {
+            client.release();
+            return res.status(403).send('Вы не можете редактировать чужие объявления');
+        }
+
+        const {
+            brand,
+            year,
+            model,
+            engineVolume,
+            transmission,
+            bodyType,
+            description,
+            partNumber,
+            fuelType,
+            fuelSubtype,
+            part,
+            price
+        } = req.body;
 
         const query = `
             UPDATE announcements
@@ -369,51 +378,56 @@ app.put('/api/announcements/:id', upload.array('photos', 5), async (req, res) =>
                 part_number   = $8,
                 fuel_type     = $9,
                 fuel_subtype  = $10,
-                photos        = $11,
-                part          = $12,
-                price         = $13
-            WHERE id = $14
+                part          = $11,
+                price         = $12
+            WHERE id = $13
+              AND user_id = $14
         `;
 
-        const values = [
-            brand,
-            year,
-            model,
-            engineVolume,
-            transmission,
-            bodyType,
-            description,
-            partNumber,
-            fuelType,
-            fuelSubtype,
-            newPhotos,
-            part,
-            price,
-            req.params.id
-        ];
+        const values = [brand, year, model, engineVolume, transmission, bodyType, description, partNumber, fuelType, fuelSubtype, part, price, id, userId];
 
         await client.query(query, values);
         client.release();
 
-        res.status(200).json({success: true});
+        res.status(200).send('Объявление успешно обновлено');
     } catch (err) {
-        console.error('Ошибка:', err);
-        res.status(500).json({success: false, error: err.message});
+        console.error('Ошибка при обновлении объявления:', err);
+        res.status(500).send('Ошибка сервера');
     }
 });
 
+
 app.delete('/api/announcements/:id', async (req, res) => {
+    if (!req.session.loggedIn) {
+        return res.status(401).send('Вы должны быть авторизованы.');
+    }
+
+    const userId = req.session.userId;
     const {id} = req.params;
+
     try {
         const client = await pool.connect();
-        await client.query('DELETE FROM announcements WHERE id = $1', [id]);
+
+        const result = await client.query('SELECT user_id FROM announcements WHERE id = $1', [id]);
+        if (result.rows.length === 0) {
+            client.release();
+            return res.status(404).send('Объявление не найдено');
+        }
+        if (result.rows[0].user_id !== userId) {
+            client.release();
+            return res.status(403).send('Вы не можете удалить чужое объявление');
+        }
+
+        await client.query('DELETE FROM announcements WHERE id = $1 AND user_id = $2', [id, userId]);
         client.release();
+
         res.status(200).send('Объявление успешно удалено');
     } catch (err) {
         console.error('Ошибка при удалении объявления:', err);
-        res.status(500).send('Ошибка при удалении объявления');
+        res.status(500).send('Ошибка сервера');
     }
 });
+
 
 app.get('/api/currency-rates', async (req, res) => {
     try {
