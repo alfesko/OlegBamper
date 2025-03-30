@@ -9253,7 +9253,20 @@
             autocompleteContainer.appendChild(div);
         });
     }
-
+    document.getElementById('sort').addEventListener('change', async function() {
+        const sortType = this.value;
+        try {
+            const response = await fetch('/api/announcements');
+            if (response.ok) {
+                const announcements = await response.json();
+                const authData = await checkUserStatus();
+                const sortedAnnouncements = sortAnnouncements(announcements, sortType);
+                displayAnnouncements(sortedAnnouncements, authData.userId);
+            }
+        } catch (error) {
+            console.error('Ошибка при загрузке объявлений:', error);
+        }
+    });
     document.querySelector('.search-form').addEventListener('submit', async (e) => {
         e.preventDefault();
 
@@ -9281,9 +9294,9 @@
             case 'price_desc':
                 return [...announcements].sort((a, b) => b.price - a.price);
             case 'date_asc':
-                return [...announcements].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+                return [...announcements].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
             case 'date_desc':
-                return [...announcements].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+                return [...announcements].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
             default:
                 return [...announcements];
         }
