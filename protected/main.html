@@ -122,7 +122,7 @@
     <div id="announcements" class="announcements">
     </div>
 </div>
-
+<div id="pagination"></div>
 <div class="footer">
     <div class="address-info">
         <p>Адрес:</p>
@@ -9136,19 +9136,16 @@
 
     window.onload = async function() {
         try {
-            const [announcementsResponse, authData] = await Promise.all([
-                fetch('/api/announcements'),
-                checkUserStatus()
-            ]);
+            await loadAnnouncements(1, 'date_desc');
 
-            const announcements = await announcementsResponse.json();
-            await displayAnnouncements(announcements, authData.userId);
-
+            const authData = await checkUserStatus();
             const authButton = document.getElementById('auth-button');
             authButton.textContent = authData.loggedIn ? 'Выйти' : 'Войти';
             authButton.onclick = authData.loggedIn ? logout : () => window.location.href = '/login';
+
+            await loadCurrencyRates();
         } catch (error) {
-            console.error('Ошибка при загрузке объявлений:', error);
+            console.error('Ошибка при загрузке страницы:', error);
         }
     };
 
@@ -9254,47 +9251,233 @@
             autocompleteContainer.appendChild(div);
         });
     }
-    document.getElementById('sort').addEventListener('change', async function() {
-        const sortType = this.value;
+    let currentPage = 1;
+    let currentSortType = 'date_desc';
+
+    async function loadAnnouncements(page = 1, sortType = currentSortType) {
         try {
             const authData = await checkUserStatus();
+            let url = `/api/announcements?page=${page}&limit=3`;
 
             if (sortType === 'my_ads') {
-                if (!authData.loggedIn) {
-                    alert('Для просмотра своих объявлений необходимо авторизоваться');
-                    this.value = 'date_desc'; // Сбрасываем выбор
-                    return;
-                }
-
-                const response = await fetch(`/api/announcements?user_id=${authData.userId}`);
-                if (response.ok) {
-                    const announcements = await response.json();
-                    displayAnnouncements(announcements, authData.userId);
-                }
+                if (!authData.loggedIn) return;
+                url += `&user_id=${authData.userId}`;
             } else {
-                const response = await fetch('/api/announcements');
-                if (response.ok) {
-                    const announcements = await response.json();
-                    const sortedAnnouncements = sortAnnouncements(announcements, sortType);
-                    displayAnnouncements(sortedAnnouncements, authData.userId);
-                }
+                url += `&sort=${sortType}`;
+            }
+
+            const response = await fetch(url);
+            if (response.ok) {
+                const data = await response.json();
+                currentPage = data.pagination.currentPage;
+
+                const announcementsToDisplay = sortType === 'my_ads'
+                    ? data.announcements
+                    : sortAnnouncements(data.announcements, sortType);
+
+                displayAnnouncements(announcementsToDisplay, authData.userId);
+                updatePaginationControls(data.pagination);
             }
         } catch (error) {
             console.error('Ошибка при загрузке объявлений:', error);
         }
+    }
+    function renderPagination(pagination) {
+        const container = document.getElementById('pagination');
+        if (!container) return;
+
+        container.innerHTML = '';
+
+        if (pagination.totalPages <= 1) return;
+
+        const paginationDiv = document.createElement('div');
+        paginationDiv.className = 'pagination';
+
+        if (currentPage > 1) {
+            const prevBtn = createPaginationButton('←', () => loadAnnouncements(currentPage - 1, currentSortType));
+            paginationDiv.appendChild(prevBtn);
+        }
+
+        if (currentPage > 3) {
+            const firstBtn = createPaginationButton('1', () => loadAnnouncements(1, currentSortType));
+            paginationDiv.appendChild(firstBtn);
+
+            if (currentPage > 4) {
+                const dots = document.createElement('span');
+                dots.textContent = '...';
+                paginationDiv.appendChild(dots);
+            }
+        }
+
+        for (let i = Math.max(1, currentPage - 2); i <= Math.min(pagination.totalPages, currentPage + 2); i++) {
+            const btn = createPaginationButton(i, () => loadAnnouncements(i, currentSortType));
+            if (i === currentPage) {
+                btn.classList.add('active');
+                btn.disabled = true;
+            }
+            paginationDiv.appendChild(btn);
+        }
+
+        if (currentPage < pagination.totalPages - 2) {
+            if (currentPage < pagination.totalPages - 3) {
+                const dots = document.createElement('span');
+                dots.textContent = '...';
+                paginationDiv.appendChild(dots);
+            }
+
+            const lastBtn = createPaginationButton(pagination.totalPages, () => loadAnnouncements(pagination.totalPages, currentSortType));
+            paginationDiv.appendChild(lastBtn);
+        }
+
+        if (currentPage < pagination.totalPages) {
+            const nextBtn = createPaginationButton('→', () => loadAnnouncements(currentPage + 1, currentSortType));
+            paginationDiv.appendChild(nextBtn);
+        }
+
+        container.appendChild(paginationDiv);
+    }
+    function createPaginationButton(text, onClick) {
+        const btn = document.createElement('button');
+        btn.textContent = text;
+        btn.addEventListener('click', onClick);
+        return btn;
+    }
+
+    function updatePaginationControls(pagination) {
+        const paginationContainer = document.getElementById('pagination');
+        if (!paginationContainer) return;
+
+        paginationContainer.innerHTML = '';
+
+        if (currentPage > 1) {
+            const prevBtn = document.createElement('button');
+            prevBtn.textContent = '← Назад';
+            prevBtn.addEventListener('click', () => {
+                loadAnnouncements(currentPage - 1, currentSortType);
+            });
+            paginationContainer.appendChild(prevBtn);
+        }
+
+        const maxVisiblePages = 5;
+        let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+        let endPage = Math.min(pagination.totalPages, startPage + maxVisiblePages - 1);
+
+        if (endPage - startPage + 1 < maxVisiblePages) {
+            startPage = Math.max(1, endPage - maxVisiblePages + 1);
+        }
+
+        if (startPage > 1) {
+            const firstPageBtn = document.createElement('button');
+            firstPageBtn.textContent = '1';
+            firstPageBtn.addEventListener('click', () => {
+                loadAnnouncements(1, currentSortType);
+            });
+            paginationContainer.appendChild(firstPageBtn);
+
+            if (startPage > 2) {
+                const dots = document.createElement('span');
+                dots.textContent = '...';
+                paginationContainer.appendChild(dots);
+            }
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+            const pageBtn = document.createElement('button');
+            pageBtn.textContent = i;
+            if (i === currentPage) {
+                pageBtn.classList.add('active');
+                pageBtn.disabled = true;
+            }
+            pageBtn.addEventListener('click', () => {
+                loadAnnouncements(i, currentSortType);
+            });
+            paginationContainer.appendChild(pageBtn);
+        }
+
+        if (endPage < pagination.totalPages) {
+            if (endPage < pagination.totalPages - 1) {
+                const dots = document.createElement('span');
+                dots.textContent = '...';
+                paginationContainer.appendChild(dots);
+            }
+
+            const lastPageBtn = document.createElement('button');
+            lastPageBtn.textContent = pagination.totalPages;
+            lastPageBtn.addEventListener('click', () => {
+                loadAnnouncements(pagination.totalPages, currentSortType);
+            });
+            paginationContainer.appendChild(lastPageBtn);
+        }
+
+        if (currentPage < pagination.totalPages) {
+            const nextBtn = document.createElement('button');
+            nextBtn.textContent = 'Вперед →';
+            nextBtn.addEventListener('click', () => {
+                loadAnnouncements(currentPage + 1, currentSortType);
+            });
+            paginationContainer.appendChild(nextBtn);
+        }
+    }
+    document.getElementById('sort').addEventListener('change', async function() {
+        currentPage = 1;
+        currentSortType = this.value;
+
+        if (currentSortType === 'my_ads') {
+            const authData = await checkUserStatus();
+            if (!authData.loggedIn) {
+                alert('Для просмотра своих объявлений необходимо авторизоваться');
+                this.value = 'date_desc';
+                currentSortType = 'date_desc';
+                return;
+            }
+
+            await loadAnnouncements(currentPage, currentSortType);
+            return;
+        }
+
+        const searchForm = document.querySelector('.search-form');
+        const formData = new FormData(searchForm);
+        let hasSearchParams = false;
+
+        for (let [key, value] of formData.entries()) {
+            if (value) {
+                hasSearchParams = true;
+                break;
+            }
+        }
+
+        if (hasSearchParams) {
+            const submitEvent = new Event('submit', { cancelable: true });
+            searchForm.dispatchEvent(submitEvent);
+        } else {
+            loadAnnouncements(currentPage, currentSortType);
+        }
     });
+
     document.querySelector('.search-form').addEventListener('submit', async (e) => {
         e.preventDefault();
 
         const formData = new FormData(e.target);
         const params = new URLSearchParams(formData);
 
+        params.append('page', currentPage);
+        params.append('sort', currentSortType);
+
         try {
             const response = await fetch(`/search?${params.toString()}`);
             if (response.ok) {
                 const data = await response.json();
                 const authData = await checkUserStatus();
-                displayAnnouncements(data, authData.userId);
+
+                let announcementsToDisplay = currentSortType === 'my_ads'
+                    ? data
+                    : sortAnnouncements(data, currentSortType);
+
+                displayAnnouncements(announcementsToDisplay, authData.userId);
+
+                if (data.pagination) {
+                    updatePaginationControls(data.pagination);
+                }
             } else {
                 console.error('Ошибка при поиске');
             }
@@ -9304,21 +9487,17 @@
     });
 
     function sortAnnouncements(announcements, sortType) {
-        if (sortType === 'my_ads') {
-            return announcements; // Не сортируем, так как это уже отфильтрованные объявления
-        }
-
         switch (sortType) {
             case 'price_asc':
                 return [...announcements].sort((a, b) => a.price - b.price);
             case 'price_desc':
                 return [...announcements].sort((a, b) => b.price - a.price);
             case 'date_asc':
-                return [...announcements].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+                return [...announcements].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
             case 'date_desc':
-                return [...announcements].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+                return [...announcements].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
             default:
-                return [...announcements];
+                return announcements;
         }
     }
 

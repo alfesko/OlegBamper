@@ -296,6 +296,28 @@ button:hover {
     width: 100%;
 }
 
+#pagination {
+    margin: 20px 0;
+    text-align: center;
+}
+
+#pagination button {
+    margin: 0 5px;
+    padding: 5px 10px;
+    border: 1px solid #ddd;
+    background: #fff;
+    cursor: pointer;
+}
+
+#pagination button.active {
+    background: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+#pagination button:hover:not(.active) {
+    background: #f0f0f0;
+}
 .slider-container {
     position: relative;
     width: 100%;

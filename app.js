@@ -309,11 +309,15 @@ async function getCurrencyRates() {
 }
 
 
+// Измените эндпоинт /api/announcements
 app.get('/api/announcements', async (req, res) => {
     try {
-        const { user_id } = req.query;
+        const { user_id, page = 1, limit = 3 } = req.query; // Добавляем параметры пагинации
+        const offset = (page - 1) * limit;
+
         const client = await pool.connect();
 
+        // Запрос для получения объявлений
         let query = `
             SELECT a.*, 
                    (a.user_id = $1) AS is_owner
@@ -327,12 +331,28 @@ app.get('/api/announcements', async (req, res) => {
             values.push(user_id);
         }
 
-        query += ` ORDER BY a.created_at DESC`;
+        query += ` ORDER BY a.created_at DESC LIMIT $${paramIndex++} OFFSET $${paramIndex++}`;
+        values.push(parseInt(limit), parseInt(offset));
 
-        const result = await client.query(query, values);
+        // Запрос для подсчета общего количества объявлений
+        let countQuery = `SELECT COUNT(*) FROM announcements`;
+        const countValues = [];
+        if (user_id) {
+            countQuery += ` WHERE user_id = $1`;
+            countValues.push(user_id);
+        }
+
+        const [announcementsResult, countResult] = await Promise.all([
+            client.query(query, values),
+            client.query(countQuery, countValues)
+        ]);
+
         client.release();
 
-        const announcements = result.rows;
+        const total = parseInt(countResult.rows[0].count);
+        const totalPages = Math.ceil(total / limit);
+
+        const announcements = announcementsResult.rows;
         const currencyRates = await getCurrencyRates();
 
         if (!currencyRates) {
@@ -346,7 +366,14 @@ app.get('/api/announcements', async (req, res) => {
             price_rub: (announcement.price * currencyRates.usd_to_byn / currencyRates.rub_to_byn * 100).toFixed(2)
         }));
 
-        res.json(announcementsWithPrices);
+        res.json({
+            announcements: announcementsWithPrices,
+            pagination: {
+                currentPage: parseInt(page),
+                totalPages,
+                totalItems: total
+            }
+        });
     } catch (err) {
         console.error('Ошибка:', err);
         res.status(500).json({error: 'Ошибка сервера'});
