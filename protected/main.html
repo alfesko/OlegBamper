@@ -9257,31 +9257,32 @@
     async function loadAnnouncements(page = 1, sortType = currentSortType) {
         try {
             const authData = await checkUserStatus();
-            let url = `/api/announcements?page=${page}&limit=3`;
+            let url = `/api/announcements?page=${page}&limit=3&sort=${sortType}`;
 
             if (sortType === 'my_ads') {
-                if (!authData.loggedIn) return;
+                if (!authData.loggedIn) {
+                    alert('Для просмотра своих объявлений необходимо авторизоваться');
+                    document.getElementById('sort').value = 'date_desc';
+                    currentSortType = 'date_desc';
+                    return;
+                }
                 url += `&user_id=${authData.userId}`;
-            } else {
-                url += `&sort=${sortType}`;
             }
 
             const response = await fetch(url);
             if (response.ok) {
                 const data = await response.json();
                 currentPage = data.pagination.currentPage;
+                currentSortType = sortType;
 
-                const announcementsToDisplay = sortType === 'my_ads'
-                    ? data.announcements
-                    : sortAnnouncements(data.announcements, sortType);
-
-                displayAnnouncements(announcementsToDisplay, authData.userId);
+                displayAnnouncements(data.announcements, authData.userId);
                 updatePaginationControls(data.pagination);
             }
         } catch (error) {
             console.error('Ошибка при загрузке объявлений:', error);
         }
     }
+
     function renderPagination(pagination) {
         const container = document.getElementById('pagination');
         if (!container) return;
@@ -9461,6 +9462,7 @@
         const params = new URLSearchParams(formData);
 
         params.append('page', currentPage);
+        params.append('limit', 3); // Добавляем limit
         params.append('sort', currentSortType);
 
         try {
@@ -9469,11 +9471,7 @@
                 const data = await response.json();
                 const authData = await checkUserStatus();
 
-                let announcementsToDisplay = currentSortType === 'my_ads'
-                    ? data
-                    : sortAnnouncements(data, currentSortType);
-
-                displayAnnouncements(announcementsToDisplay, authData.userId);
+                displayAnnouncements(data.announcements, authData.userId);
 
                 if (data.pagination) {
                     updatePaginationControls(data.pagination);
@@ -9485,21 +9483,6 @@
             console.error('Ошибка:', error);
         }
     });
-
-    function sortAnnouncements(announcements, sortType) {
-        switch (sortType) {
-            case 'price_asc':
-                return [...announcements].sort((a, b) => a.price - b.price);
-            case 'price_desc':
-                return [...announcements].sort((a, b) => b.price - a.price);
-            case 'date_asc':
-                return [...announcements].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
-            case 'date_desc':
-                return [...announcements].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-            default:
-                return announcements;
-        }
-    }
 
     document.getElementById('currencyForm').addEventListener('submit', async (e) => {
         e.preventDefault();

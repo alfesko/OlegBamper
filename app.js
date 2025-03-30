@@ -312,12 +312,29 @@ async function getCurrencyRates() {
 // Измените эндпоинт /api/announcements
 app.get('/api/announcements', async (req, res) => {
     try {
-        const { user_id, page = 1, limit = 3 } = req.query; // Добавляем параметры пагинации
+        const { user_id, page = 1, limit = 3, sort = 'date_desc' } = req.query;
         const offset = (page - 1) * limit;
 
         const client = await pool.connect();
 
-        // Запрос для получения объявлений
+        // Определяем сортировку
+        let orderBy;
+        switch (sort) {
+            case 'price_asc':
+                orderBy = 'price ASC';
+                break;
+            case 'price_desc':
+                orderBy = 'price DESC';
+                break;
+            case 'date_asc':
+                orderBy = 'created_at ASC';
+                break;
+            case 'date_desc':
+            default:
+                orderBy = 'created_at DESC';
+                break;
+        }
+
         let query = `
             SELECT a.*, 
                    (a.user_id = $1) AS is_owner
@@ -331,10 +348,9 @@ app.get('/api/announcements', async (req, res) => {
             values.push(user_id);
         }
 
-        query += ` ORDER BY a.created_at DESC LIMIT $${paramIndex++} OFFSET $${paramIndex++}`;
+        query += ` ORDER BY ${orderBy} LIMIT $${paramIndex++} OFFSET $${paramIndex++}`;
         values.push(parseInt(limit), parseInt(offset));
 
-        // Запрос для подсчета общего количества объявлений
         let countQuery = `SELECT COUNT(*) FROM announcements`;
         const countValues = [];
         if (user_id) {
@@ -507,11 +523,33 @@ app.get('/search', async (req, res) => {
         fuelSubtype,
         article,
         part,
-        partNumber
+        partNumber,
+        page = 1,
+        limit = 3,
+        sort = 'date_desc'
     } = req.query;
+
+    const offset = (page - 1) * limit;
 
     try {
         const client = await pool.connect();
+
+        let orderBy;
+        switch (sort) {
+            case 'price_asc':
+                orderBy = 'price ASC';
+                break;
+            case 'price_desc':
+                orderBy = 'price DESC';
+                break;
+            case 'date_asc':
+                orderBy = 'created_at ASC';
+                break;
+            case 'date_desc':
+            default:
+                orderBy = 'created_at DESC';
+                break;
+        }
 
         let query = `
             SELECT a.*, 
@@ -531,61 +569,127 @@ app.get('/search', async (req, res) => {
             values.push(year);
         }
         if (model) {
-            query += ' AND model ILIKE $' + (values.length + 1);
+            query += ` AND model ILIKE $${paramIndex++}`;
             values.push(`%${model}%`);
         }
         if (engineVolume) {
-            query += ' AND engine_volume = $' + (values.length + 1);
+            query += ` AND engine_volume = $${paramIndex++}`;
             values.push(engineVolume);
         }
         if (transmission) {
-            query += ' AND transmission = $' + (values.length + 1);
+            query += ` AND transmission = $${paramIndex++}`;
             values.push(transmission);
         }
         if (bodyType) {
-            query += ' AND body_type = $' + (values.length + 1);
+            query += ` AND body_type = $${paramIndex++}`;
             values.push(bodyType);
         }
         if (fuelType) {
-            query += ' AND fuel_type = $' + (values.length + 1);
+            query += ` AND fuel_type = $${paramIndex++}`;
             values.push(fuelType);
         }
         if (fuelSubtype) {
-            query += ' AND fuel_subtype = $' + (values.length + 1);
+            query += ` AND fuel_subtype = $${paramIndex++}`;
             values.push(fuelSubtype);
         }
         if (article) {
-            query += ' AND article = $' + (values.length + 1);
+            query += ` AND article = $${paramIndex++}`;
             values.push(article);
         }
         if (part) {
-            query += ' AND part ILIKE $' + (values.length + 1);
+            query += ` AND part ILIKE $${paramIndex++}`;
             values.push(`%${part}%`);
         }
         if (partNumber) {
-            query += ' AND part_number = $' + (values.length + 1);
+            query += ` AND part_number = $${paramIndex++}`;
             values.push(partNumber);
         }
 
-        const announcements = await client.query(query, values);
-        const currencyRates = await client.query('SELECT * FROM currency_rates ORDER BY updated_at DESC LIMIT 1');
+        query += ` ORDER BY ${orderBy} LIMIT $${paramIndex++} OFFSET $${paramIndex++}`;
+        values.push(parseInt(limit), parseInt(offset));
+
+        let countQuery = `SELECT COUNT(*) FROM announcements WHERE 1=1`;
+        const countValues = [];
+        let countParamIndex = 1;
+
+        if (brand) {
+            countQuery += ` AND brand ILIKE $${countParamIndex++}`;
+            countValues.push(`%${brand}%`);
+        }
+        if (year) {
+            countQuery += ` AND year = $${countParamIndex++}`;
+            countValues.push(year);
+        }
+        if (model) {
+            countQuery += ` AND model ILIKE $${countParamIndex++}`;
+            countValues.push(`%${model}%`);
+        }
+        if (engineVolume) {
+            countQuery += ` AND engine_volume = $${countParamIndex++}`;
+            countValues.push(engineVolume);
+        }
+        if (transmission) {
+            countQuery += ` AND transmission = $${countParamIndex++}`;
+            countValues.push(transmission);
+        }
+        if (bodyType) {
+            countQuery += ` AND body_type = $${countParamIndex++}`;
+            countValues.push(bodyType);
+        }
+        if (fuelType) {
+            countQuery += ` AND fuel_type = $${countParamIndex++}`;
+            countValues.push(fuelType);
+        }
+        if (fuelSubtype) {
+            countQuery += ` AND fuel_subtype = $${countParamIndex++}`;
+            countValues.push(fuelSubtype);
+        }
+        if (article) {
+            countQuery += ` AND article = $${countParamIndex++}`;
+            countValues.push(article);
+        }
+        if (part) {
+            countQuery += ` AND part ILIKE $${countParamIndex++}`;
+            countValues.push(`%${part}%`);
+        }
+        if (partNumber) {
+            countQuery += ` AND part_number = $${countParamIndex++}`;
+            countValues.push(partNumber);
+        }
+
+        const [announcementsResult, countResult] = await Promise.all([
+            client.query(query, values),
+            client.query(countQuery, countValues)
+        ]);
+
         client.release();
 
-        if (!currencyRates.rows.length) {
+        const total = parseInt(countResult.rows[0].count);
+        const totalPages = Math.ceil(total / limit);
+
+        const announcements = announcementsResult.rows;
+        const currencyRates = await getCurrencyRates();
+
+        if (!currencyRates) {
             return res.status(500).json({error: 'Курсы валют не найдены'});
         }
 
-        const {eur_to_byn, usd_to_byn, rub_to_byn} = currencyRates.rows[0];
-
-        const results = announcements.rows.map(announcement => ({
+        const results = announcements.map(announcement => ({
             ...announcement,
             price_usd: announcement.price,
-            price_eur: (announcement.price * usd_to_byn / eur_to_byn).toFixed(2),
-            price_byn: (announcement.price * usd_to_byn).toFixed(2),
-            price_rub: (announcement.price * usd_to_byn / rub_to_byn * 100).toFixed(2)
+            price_eur: (announcement.price * currencyRates.usd_to_byn / currencyRates.eur_to_byn).toFixed(2),
+            price_byn: (announcement.price * currencyRates.usd_to_byn).toFixed(2),
+            price_rub: (announcement.price * currencyRates.usd_to_byn / currencyRates.rub_to_byn * 100).toFixed(2)
         }));
 
-        res.json(results);
+        res.json({
+            announcements: results,
+            pagination: {
+                currentPage: parseInt(page),
+                totalPages,
+                totalItems: total
+            }
+        });
     } catch (err) {
         console.error('Ошибка при поиске объявлений:', err);
         res.status(500).json({error: 'Ошибка сервера'});
