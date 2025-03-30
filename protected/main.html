@@ -59,6 +59,7 @@
     <option value="price_desc">Цена (по убыванию)</option>
     <option value="date_asc">Дата (сначала старые)</option>
     <option value="date_desc">Дата (сначала новые)</option>
+    <option value="my_ads">Мои объявления</option>
 </select>
 <h2>Объявления</h2>
 <div class="main-content">
@@ -9256,12 +9257,27 @@
     document.getElementById('sort').addEventListener('change', async function() {
         const sortType = this.value;
         try {
-            const response = await fetch('/api/announcements');
-            if (response.ok) {
-                const announcements = await response.json();
-                const authData = await checkUserStatus();
-                const sortedAnnouncements = sortAnnouncements(announcements, sortType);
-                displayAnnouncements(sortedAnnouncements, authData.userId);
+            const authData = await checkUserStatus();
+
+            if (sortType === 'my_ads') {
+                if (!authData.loggedIn) {
+                    alert('Для просмотра своих объявлений необходимо авторизоваться');
+                    this.value = 'date_desc'; // Сбрасываем выбор
+                    return;
+                }
+
+                const response = await fetch(`/api/announcements?user_id=${authData.userId}`);
+                if (response.ok) {
+                    const announcements = await response.json();
+                    displayAnnouncements(announcements, authData.userId);
+                }
+            } else {
+                const response = await fetch('/api/announcements');
+                if (response.ok) {
+                    const announcements = await response.json();
+                    const sortedAnnouncements = sortAnnouncements(announcements, sortType);
+                    displayAnnouncements(sortedAnnouncements, authData.userId);
+                }
             }
         } catch (error) {
             console.error('Ошибка при загрузке объявлений:', error);
@@ -9288,6 +9304,10 @@
     });
 
     function sortAnnouncements(announcements, sortType) {
+        if (sortType === 'my_ads') {
+            return announcements; // Не сортируем, так как это уже отфильтрованные объявления
+        }
+
         switch (sortType) {
             case 'price_asc':
                 return [...announcements].sort((a, b) => a.price - b.price);

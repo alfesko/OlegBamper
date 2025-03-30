@@ -308,16 +308,28 @@ async function getCurrencyRates() {
     }
 }
 
+
 app.get('/api/announcements', async (req, res) => {
     try {
+        const { user_id } = req.query;
         const client = await pool.connect();
-        const query = `
+
+        let query = `
             SELECT a.*, 
                    (a.user_id = $1) AS is_owner
             FROM announcements a
-            ORDER BY a.created_at DESC
         `;
-        const result = await client.query(query, [req.session.userId || null]);
+        const values = [req.session.userId || null];
+        let paramIndex = 2;
+
+        if (user_id) {
+            query += ` WHERE a.user_id = $${paramIndex++}`;
+            values.push(user_id);
+        }
+
+        query += ` ORDER BY a.created_at DESC`;
+
+        const result = await client.query(query, values);
         client.release();
 
         const announcements = result.rows;
@@ -340,6 +352,7 @@ app.get('/api/announcements', async (req, res) => {
         res.status(500).json({error: 'Ошибка сервера'});
     }
 });
+
 app.put('/api/announcements/:id', upload.array('photos', 5), async (req, res) => {
     if (!req.session.loggedIn) {
         return res.status(401).send('Вы должны быть авторизованы.');
@@ -482,7 +495,6 @@ app.get('/search', async (req, res) => {
         const values = [req.session.userId || null];
         let paramIndex = 2;
 
-        // Добавляем условия поиска
         if (brand) {
             query += ` AND brand ILIKE $${paramIndex++}`;
             values.push(`%${brand}%`);
