@@ -34,7 +34,6 @@
         </div>
     </div>
 </header>
-<h3>Курс</h3>
 <div class="currency-edit">
     <h3>Редактировать курсы валют</h3>
     <form id="currencyForm">
@@ -53,15 +52,7 @@
         <button type="submit">Сохранить курсы</button>
     </form>
 </div>
-<label for="sort">Сортировать по:</label>
-<select id="sort" name="sort">
-    <option value="price_asc">Цена (по возрастанию)</option>
-    <option value="price_desc">Цена (по убыванию)</option>
-    <option value="date_asc">Дата (сначала старые)</option>
-    <option value="date_desc">Дата (сначала новые)</option>
-    <option value="my_ads">Мои объявления</option>
-</select>
-<h2>Объявления</h2>
+
 <div class="main-content">
     <div class="container">
         <h2>Выбор запчастей</h2>
@@ -96,6 +87,7 @@
                 <option value="хэтчбек">Хэтчбек</option>
                 <option value="внедорожник">Внедорожник</option>
             </select>
+
             <label for="fuelType">Тип топлива:</label>
             <select id="fuelType" name="fuelType" onchange="updateFuelSubtype()">
                 <option value="" disabled selected>Выберите тип топлива</option>
@@ -104,14 +96,17 @@
                 <option value="электро">Электро</option>
                 <option value="гибрид">Гибрид</option>
             </select>
+
             <label for="fuelSubtype" id="fuelSubtypeLabel" style="display:none;">Подтип топлива:</label>
-            <select id="fuelSubtype" name="fuelSubtype" style="display:none;">
-            </select>
+            <select id="fuelSubtype" name="fuelSubtype" style="display:none;"></select>
+
             <label for="article">Артикул объявления:</label>
             <input type="text" id="article" name="article">
+
             <label for="part">Запчасть:</label>
             <input type="text" id="part" name="part" autocomplete="off" oninput="handlePartInput(this.value)">
             <div id="part-autocomplete" class="autocomplete-items"></div>
+
             <label for="partNumber">Номер запчасти:</label>
             <input type="text" id="partNumber" name="partNumber">
 
@@ -119,10 +114,27 @@
         </form>
     </div>
 
-    <div id="announcements" class="announcements">
+    <div class="announcements-controls">
+        <h2>Объявления</h2>
+        <div class="sort-container">
+            <label for="sort">Сортировать по:</label>
+            <select id="sort" name="sort">
+                <option value="price_asc">Цена (по возрастанию)</option>
+                <option value="price_desc">Цена (по убыванию)</option>
+                <option value="date_asc">Дата (сначала старые)</option>
+                <option value="date_desc">Дата (сначала новые)</option>
+                <option value="my_ads">Мои объявления</option>
+            </select>
+        </div>
+        <div id="announcements" class="announcements">
+            <div id="announcements-list" class="announcements-list">
+            </div>
+        </div>
     </div>
 </div>
+
 <div id="pagination"></div>
+
 <div class="footer">
     <div class="address-info">
         <p>Адрес:</p>
@@ -9046,7 +9058,7 @@
             };
         } catch (error) {
             console.error('Ошибка при проверке статуса:', error);
-            return { loggedIn: false, userId: null, isAdmin: false };
+            return {loggedIn: false, userId: null, isAdmin: false};
         }
     }
 
@@ -9066,23 +9078,23 @@
 
             // Создаем HTML только для непустых полей
             const fields = [
-                { name: 'Год', value: announcement.year },
-                { name: 'Объем', value: announcement.engine_volume },
-                { name: 'Коробка', value: announcement.transmission },
-                { name: 'Кузов', value: announcement.body_type },
-                { name: 'Тип топлива', value: announcement.fuel_type },
-                { name: 'Подтип топлива', value: announcement.fuel_subtype },
-                { name: 'Описание', value: announcement.description },
-                { name: 'Номер запчасти', value: announcement.part_number },
-                { name: 'Запчасть', value: announcement.part },
+                {name: 'Год', value: announcement.year},
+                {name: 'Объем', value: announcement.engine_volume},
+                {name: 'Коробка', value: announcement.transmission},
+                {name: 'Кузов', value: announcement.body_type},
+                {name: 'Тип топлива', value: announcement.fuel_type},
+                {name: 'Подтип топлива', value: announcement.fuel_subtype},
+                {name: 'Описание', value: announcement.description},
+                {name: 'Номер запчасти', value: announcement.part_number},
+                {name: 'Запчасть', value: announcement.part},
                 {
                     name: 'Цена',
                     value: announcement.price ?
                         `${announcement.price} USD<br>${announcement.price_eur} EUR<br>${announcement.price_rub} RUB<br>${announcement.price_byn} BYN` :
                         null
                 },
-                { name: 'Артикул', value: announcement.article },
-                { name: 'Дата', value: formattedDate }
+                {name: 'Артикул', value: announcement.article},
+                {name: 'Дата', value: formattedDate}
             ];
 
             const nonEmptyFields = fields.filter(field => field.value && field.value !== 'null' && field.value !== 'undefined');

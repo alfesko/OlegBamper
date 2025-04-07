@@ -34,7 +34,7 @@
         <form action="/announcement" method="POST" enctype="multipart/form-data">
             <label for="brand">Марка:</label>
             <input type="text" id="brand" name="brand" autocomplete="off" oninput="handleBrandInput(this.value)">
-            <div id="brand-autocomplete" class="autocomplete-items" ></div>
+            <div id="brand-autocomplete" class="autocomplete-items"></div>
             <label for="year">Год выпуска:</label>
             <input type="text" id="year" name="year" autocomplete="off" oninput="handleYearInput(this.value)">
             <div id="year-autocomplete" class="autocomplete-items"></div>
@@ -76,7 +76,7 @@
                     <option value="погрузчик">Погрузчик</option>
                 </select>
             </div>
-            <select id="fuelType" name="fuelType"  onchange="updateFuelSubtype()">
+            <select id="fuelType" name="fuelType" onchange="updateFuelSubtype()">
                 <option value="" disabled selected>Выберите тип топлива</option>
                 <option value="бензин">Бензин</option>
                 <option value="дизель">Дизель</option>
