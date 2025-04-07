@@ -9050,7 +9050,7 @@
         }
     }
 
-    async function displayAnnouncements(announcements, currentUserId, isAdmin) {
+    function displayAnnouncements(announcements, currentUserId, isAdmin) {
         const announcementsContainer = document.getElementById('announcements');
         announcementsContainer.innerHTML = '';
 
@@ -9064,27 +9064,49 @@
             const date = new Date(announcement.created_at);
             const formattedDate = `${date.getDate().toString().padStart(2, '0')}.${(date.getMonth() + 1).toString().padStart(2, '0')}.${date.getFullYear()} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
 
+            // Создаем HTML только для непустых полей
+            const fields = [
+                { name: 'Год', value: announcement.year },
+                { name: 'Объем', value: announcement.engine_volume },
+                { name: 'Коробка', value: announcement.transmission },
+                { name: 'Кузов', value: announcement.body_type },
+                { name: 'Тип топлива', value: announcement.fuel_type },
+                { name: 'Подтип топлива', value: announcement.fuel_subtype },
+                { name: 'Описание', value: announcement.description },
+                { name: 'Номер запчасти', value: announcement.part_number },
+                { name: 'Запчасть', value: announcement.part },
+                {
+                    name: 'Цена',
+                    value: announcement.price ?
+                        `${announcement.price} USD<br>${announcement.price_eur} EUR<br>${announcement.price_rub} RUB<br>${announcement.price_byn} BYN` :
+                        null
+                },
+                { name: 'Артикул', value: announcement.article },
+                { name: 'Дата', value: formattedDate }
+            ];
+
+            const nonEmptyFields = fields.filter(field => field.value && field.value !== 'null' && field.value !== 'undefined');
+
+            const fieldsHTML = nonEmptyFields.map(field =>
+                `<p><strong>${field.name}:</strong> ${field.value}</p>`
+            ).join('');
+
             const announcementElement = document.createElement('div');
             announcementElement.classList.add('announcement-item');
             announcementElement.innerHTML = `
-                <h3>${announcement.brand} - ${announcement.model}</h3>
-                <p>Год: ${announcement.year}</p>
-                <p>Объем: ${announcement.engine_volume}</p>
-                <p>Коробка: ${announcement.transmission}</p>
-                <p>Кузов: ${announcement.body_type}</p>
-                <p>Тип топлива: ${announcement.fuel_type}</p>
-                <p>Подтип топлива: ${announcement.fuel_subtype}</p>
-                <p>Описание: ${announcement.description}</p>
-                <p>Номер запчасти: ${announcement.part_number}</p>
-                <p>Запчасть: ${announcement.part}</p>
-                <p>Цена:<br> ${announcement.price} USD <br> ${announcement.price_eur} EUR <br> ${announcement.price_rub} RUB <br> ${announcement.price_byn} BYN</p>
-                <p>Артикул: ${announcement.article}</p>
-                <p>Дата: ${formattedDate}</p>
-                <div class="announcement-actions">
-                    <button class="edit-btn" data-id="${announcement.id}" style="display: ${isAdmin || isOwner ? 'inline-block' : 'none'}">Редактировать</button>
-                    <button class="delete-btn" data-id="${announcement.id}"style="display: ${isAdmin || isOwner ? 'inline-block' : 'none'}">Удалить</button>
-                </div>
-            `;
+            <h3>${announcement.brand} - ${announcement.model}</h3>
+            ${fieldsHTML}
+            <div class="announcement-actions">
+                <button class="edit-btn" data-id="${announcement.id}"
+                    style="display: ${isAdmin || isOwner ? 'inline-block' : 'none'}">
+                    Редактировать
+                </button>
+                <button class="delete-btn" data-id="${announcement.id}"
+                    style="display: ${isAdmin || isOwner ? 'inline-block' : 'none'}">
+                    Удалить
+                </button>
+            </div>
+        `;
 
             if (Array.isArray(announcement.photos) && announcement.photos.length > 0) {
                 const sliderContainer = document.createElement('div');
@@ -9111,7 +9133,7 @@
                 sliderContainer.appendChild(slider);
                 sliderContainer.appendChild(prevBtn);
                 sliderContainer.appendChild(nextBtn);
-                announcementElement.appendChild(sliderContainer);
+                announcementElement.insertBefore(sliderContainer, announcementElement.querySelector('.announcement-actions'));
 
                 let currentIndex = 0;
                 const slides = slider.querySelectorAll('img');
