@@ -107,10 +107,10 @@
             <input type="text" id="model" name="model" required>
 
             <label for="engineVolume">Объем:</label>
-            <input type="text" id="engineVolume" name="engineVolume" required>
+            <input type="text" id="engineVolume" name="engineVolume">
 
             <label for="transmission">Коробка:</label>
-            <select id="transmission" name="transmission" required>
+            <select id="transmission" name="transmission">
                 <option value="АКПП">АКПП</option>
                 <option value="МКПП">МКПП</option>
                 <option value="РОБОТ">Робот</option>
@@ -118,7 +118,7 @@
             </select>
 
             <label for="bodyType">Кузов:</label>
-            <select id="bodyType" name="bodyType" required>
+            <select id="bodyType" name="bodyType">
                 <option value="Седан">Седан</option>
                 <option value="Универсал">Универсал</option>
                 <option value="Хэтчбек">Хэтчбек</option>
@@ -126,7 +126,7 @@
             </select>
 
             <label for="fuelType">Тип топлива:</label>
-            <select id="fuelType" name="fuelType" required>
+            <select id="fuelType" name="fuelType">
                 <option value="бензин">Бензин</option>
                 <option value="дизель">Дизель</option>
                 <option value="электро">Электро</option>
@@ -140,10 +140,10 @@
             </div>
 
             <label for="description">Описание:</label>
-            <textarea id="description" name="description" required></textarea>
+            <textarea id="description" name="description"></textarea>
 
             <label for="partNumber">Номер запчасти:</label>
-            <input type="text" id="partNumber" name="partNumber" required>
+            <input type="text" id="partNumber" name="partNumber">
             <label for="price">Цена (USD):</label>
             <input type="number" id="price" name="price" step="0.01" min="0" value="${announcement.price}" required>
             <label for="photos">Фото объявления:</label>

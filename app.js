@@ -423,11 +423,9 @@ app.put('/api/announcements/:id', upload.array('photos', 5), async (req, res) =>
     try {
         const client = await pool.connect();
 
-        // Получаем информацию о пользователе (является ли он администратором)
         const userResult = await client.query('SELECT is_admin FROM users WHERE id = $1', [userId]);
         const isAdmin = userResult.rows[0]?.is_admin;
 
-        // Если не админ, проверяем, что объявление принадлежит пользователю
         if (!isAdmin) {
             const announcementResult = await client.query('SELECT user_id FROM announcements WHERE id = $1', [id]);
             if (announcementResult.rows.length === 0) {
@@ -441,7 +439,6 @@ app.put('/api/announcements/:id', upload.array('photos', 5), async (req, res) =>
             }
         }
 
-        // Извлекаем данные из запроса для обновления
         const {
             brand,
             year,
