@@ -216,11 +216,30 @@ app.get('/logout', (req, res) => {
     });
 });
 
-app.get('/auth-status', (req, res) => {
-    res.json({
-        loggedIn: !!req.session.loggedIn,
-        userId: req.session.userId || null
-    });
+app.get('/auth-status', async (req, res) => {
+    if (!req.session.userId) {
+        return res.json({ loggedIn: false });
+    }
+
+    try {
+        const result = await pool.query(
+            'SELECT id, is_admin FROM users WHERE id = $1',
+            [req.session.userId]
+        );
+
+        if (result.rows.length > 0) {
+            res.json({
+                loggedIn: true,
+                userId: req.session.userId,
+                isAdmin: result.rows[0].is_admin
+            });
+        } else {
+            res.json({ loggedIn: false });
+        }
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Ошибка сервера' });
+    }
 });
 
 app.get('/', (req, res) => {
@@ -308,8 +327,6 @@ async function getCurrencyRates() {
     }
 }
 
-
-// Измените эндпоинт /api/announcements
 app.get('/api/announcements', async (req, res) => {
     try {
         const { user_id, page = 1, limit = 3, sort = 'date_desc' } = req.query;
@@ -317,7 +334,6 @@ app.get('/api/announcements', async (req, res) => {
 
         const client = await pool.connect();
 
-        // Определяем сортировку
         let orderBy;
         switch (sort) {
             case 'price_asc':
@@ -402,21 +418,30 @@ app.put('/api/announcements/:id', upload.array('photos', 5), async (req, res) =>
     }
 
     const userId = req.session.userId;
-    const {id} = req.params;
+    const { id } = req.params;
 
     try {
         const client = await pool.connect();
 
-        const result = await client.query('SELECT user_id FROM announcements WHERE id = $1', [id]);
-        if (result.rows.length === 0) {
-            client.release();
-            return res.status(404).send('Объявление не найдено');
-        }
-        if (result.rows[0].user_id !== userId) {
-            client.release();
-            return res.status(403).send('Вы не можете редактировать чужие объявления');
+        // Получаем информацию о пользователе (является ли он администратором)
+        const userResult = await client.query('SELECT is_admin FROM users WHERE id = $1', [userId]);
+        const isAdmin = userResult.rows[0]?.is_admin;
+
+        // Если не админ, проверяем, что объявление принадлежит пользователю
+        if (!isAdmin) {
+            const announcementResult = await client.query('SELECT user_id FROM announcements WHERE id = $1', [id]);
+            if (announcementResult.rows.length === 0) {
+                client.release();
+                return res.status(404).send('Объявление не найдено');
+            }
+
+            if (announcementResult.rows[0].user_id !== userId) {
+                client.release();
+                return res.status(403).send('Недостаточно прав для редактирования этого объявления');
+            }
         }
 
+        // Извлекаем данные из запроса для обновления
         const {
             brand,
             year,
@@ -447,10 +472,23 @@ app.put('/api/announcements/:id', upload.array('photos', 5), async (req, res) =>
                 part          = $11,
                 price         = $12
             WHERE id = $13
-              AND user_id = $14
         `;
 
-        const values = [brand, year, model, engineVolume, transmission, bodyType, description, partNumber, fuelType, fuelSubtype, part, price, id, userId];
+        const values = [
+            brand,
+            year,
+            model,
+            engineVolume,
+            transmission,
+            bodyType,
+            description,
+            partNumber,
+            fuelType,
+            fuelSubtype,
+            part,
+            price,
+            id
+        ];
 
         await client.query(query, values);
         client.release();
@@ -462,31 +500,36 @@ app.put('/api/announcements/:id', upload.array('photos', 5), async (req, res) =>
     }
 });
 
-
 app.delete('/api/announcements/:id', async (req, res) => {
     if (!req.session.loggedIn) {
         return res.status(401).send('Вы должны быть авторизованы.');
     }
 
-    const userId = req.session.userId;
-    const {id} = req.params;
-
     try {
-        const client = await pool.connect();
+        const userId = req.session.userId;
+        const { id } = req.params;
+        const userResult = await pool.query(
+            'SELECT is_admin FROM users WHERE id = $1',
+            [userId]
+        );
+        const isAdmin = userResult.rows[0]?.is_admin;
 
-        const result = await client.query('SELECT user_id FROM announcements WHERE id = $1', [id]);
-        if (result.rows.length === 0) {
-            client.release();
-            return res.status(404).send('Объявление не найдено');
+        if (!isAdmin) {
+            const announcementResult = await pool.query(
+                'SELECT user_id FROM announcements WHERE id = $1',
+                [id]
+            );
+
+            if (announcementResult.rows.length === 0) {
+                return res.status(404).send('Объявление не найдено');
+            }
+
+            if (announcementResult.rows[0].user_id !== userId) {
+                return res.status(403).send('Недостаточно прав');
+            }
         }
-        if (result.rows[0].user_id !== userId) {
-            client.release();
-            return res.status(403).send('Вы не можете удалить чужое объявление');
-        }
 
-        await client.query('DELETE FROM announcements WHERE id = $1 AND user_id = $2', [id, userId]);
-        client.release();
-
+        await pool.query('DELETE FROM announcements WHERE id = $1', [id]);
         res.status(200).send('Объявление успешно удалено');
     } catch (err) {
         console.error('Ошибка при удалении объявления:', err);
@@ -695,8 +738,29 @@ app.get('/search', async (req, res) => {
         res.status(500).json({error: 'Ошибка сервера'});
     }
 });
-app.post('/api/currency-rates', async (req, res) => {
-    const {eur, usd, rub} = req.body;
+async function requireAdmin(req, res, next) {
+    if (!req.session.userId) {
+        return res.status(401).json({ error: 'Требуется авторизация' });
+    }
+
+    try {
+        const result = await pool.query(
+            'SELECT is_admin FROM users WHERE id = $1',
+            [req.session.userId]
+        );
+
+        if (result.rows[0]?.is_admin) {
+            next();
+        } else {
+            res.status(403).json({ error: 'Требуются права администратора' });
+        }
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Ошибка сервера' });
+    }
+}
+app.post('/api/currency-rates', requireAdmin, async (req, res) => {
+    const { eur, usd, rub } = req.body;
 
     if (!eur || !usd || !rub) {
         return res.status(400).json({error: 'Все поля обязательны'});
@@ -719,3 +783,33 @@ app.post('/api/currency-rates', async (req, res) => {
 app.listen(PORT, () => {
     console.log(`Сервер запущен на порту ${PORT}`);
 });
+
+
+
+
+async function loadAnnouncements(page = 1, sortType = 'date_desc') {
+    try {
+        const response = await fetch(`/api/announcements?page=${page}&sort=${sortType}`);
+        const data = await response.json();
+
+        const announcementsContainer = document.getElementById('announcements');
+        announcementsContainer.innerHTML = '';
+
+        data.announcements.forEach(announcement => {
+            const announcementElement = document.createElement('div');
+            announcementElement.className = 'announcement-item';
+            announcementElement.innerHTML = `
+        <h3>${announcement.brand} - ${announcement.model}</h3>
+        <p>Год: ${announcement.year}</p>
+        <p>Цена: ${announcement.price_byn} BYN</p>
+        ${announcement.photos && announcement.photos.length > 0 ?
+                `<img src="${announcement.photos[0]}" alt="Фото запчасти" class="announcement-photo">` : ''}
+      `;
+            announcementsContainer.appendChild(announcementElement);
+        });
+
+        updatePagination(data.pagination);
+    } catch (error) {
+        console.error('Ошибка загрузки объявлений:', error);
+    }
+}

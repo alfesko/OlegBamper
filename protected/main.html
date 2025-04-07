@@ -9038,14 +9038,19 @@
     async function checkUserStatus() {
         try {
             const response = await fetch('/auth-status');
-            return await response.json();
+            const data = await response.json();
+            return {
+                loggedIn: data.loggedIn || false,
+                userId: data.userId || null,
+                isAdmin: data.isAdmin || false
+            };
         } catch (error) {
             console.error('Ошибка при проверке статуса:', error);
-            return { loggedIn: false, userId: null };
+            return { loggedIn: false, userId: null, isAdmin: false };
         }
     }
 
-    async function displayAnnouncements(announcements, currentUserId) {
+    async function displayAnnouncements(announcements, currentUserId, isAdmin) {
         const announcementsContainer = document.getElementById('announcements');
         announcementsContainer.innerHTML = '';
 
@@ -9076,8 +9081,8 @@
                 <p>Артикул: ${announcement.article}</p>
                 <p>Дата: ${formattedDate}</p>
                 <div class="announcement-actions">
-                    <button class="edit-btn" data-id="${announcement.id}" style="display: ${isOwner ? 'inline-block' : 'none'}">Редактировать</button>
-                    <button class="delete-btn" data-id="${announcement.id}" style="display: ${isOwner ? 'inline-block' : 'none'}">Удалить</button>
+                    <button class="edit-btn" data-id="${announcement.id}" style="display: ${isAdmin || isOwner ? 'inline-block' : 'none'}">Редактировать</button>
+                    <button class="delete-btn" data-id="${announcement.id}"style="display: ${isAdmin || isOwner ? 'inline-block' : 'none'}">Удалить</button>
                 </div>
             `;
 
@@ -9134,11 +9139,12 @@
         }
     }
 
-    window.onload = async function() {
+    window.onload = async function () {
         try {
             await loadAnnouncements(1, 'date_desc');
-
             const authData = await checkUserStatus();
+            const currencyForm = document.getElementById('currencyForm');
+            currencyForm.style.display = authData.isAdmin ? 'block' : 'none';
             const authButton = document.getElementById('auth-button');
             authButton.textContent = authData.loggedIn ? 'Выйти' : 'Войти';
             authButton.onclick = authData.loggedIn ? logout : () => window.location.href = '/login';
@@ -9151,7 +9157,7 @@
 
     async function logout() {
         try {
-            await fetch('/logout', { method: 'GET' });
+            await fetch('/logout', {method: 'GET'});
             window.location.reload();
         } catch (error) {
             console.error('Ошибка при выходе:', error);
@@ -9168,12 +9174,12 @@
         }
     }
 
-    document.addEventListener('click', async function(event) {
+    document.addEventListener('click', async function (event) {
         if (event.target.classList.contains('delete-btn')) {
             const id = event.target.dataset.id;
             if (confirm('Вы уверены, что хотите удалить объявление?')) {
                 try {
-                    const response = await fetch(`/api/announcements/${id}`, { method: 'DELETE' });
+                    const response = await fetch(`/api/announcements/${id}`, {method: 'DELETE'});
                     if (response.ok) {
                         window.location.reload();
                     }
@@ -9244,13 +9250,14 @@
         filteredParts.forEach(part => {
             const div = document.createElement('div');
             div.innerHTML = part.label;
-            div.addEventListener('click', function() {
+            div.addEventListener('click', function () {
                 document.getElementById('part').value = part.label;
                 autocompleteContainer.innerHTML = '';
             });
             autocompleteContainer.appendChild(div);
         });
     }
+
     let currentPage = 1;
     let currentSortType = 'date_desc';
 
@@ -9274,8 +9281,7 @@
                 const data = await response.json();
                 currentPage = data.pagination.currentPage;
                 currentSortType = sortType;
-
-                displayAnnouncements(data.announcements, authData.userId);
+                displayAnnouncements(data.announcements, authData.userId, authData.isAdmin);
                 updatePaginationControls(data.pagination);
             }
         } catch (error) {
@@ -9337,6 +9343,7 @@
 
         container.appendChild(paginationDiv);
     }
+
     function createPaginationButton(text, onClick) {
         const btn = document.createElement('button');
         btn.textContent = text;
@@ -9419,7 +9426,8 @@
             paginationContainer.appendChild(nextBtn);
         }
     }
-    document.getElementById('sort').addEventListener('change', async function() {
+
+    document.getElementById('sort').addEventListener('change', async function () {
         currentPage = 1;
         currentSortType = this.value;
 
@@ -9448,7 +9456,7 @@
         }
 
         if (hasSearchParams) {
-            const submitEvent = new Event('submit', { cancelable: true });
+            const submitEvent = new Event('submit', {cancelable: true});
             searchForm.dispatchEvent(submitEvent);
         } else {
             loadAnnouncements(currentPage, currentSortType);
