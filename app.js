@@ -781,9 +781,6 @@ app.listen(PORT, () => {
     console.log(`Сервер запущен на порту ${PORT}`);
 });
 
-
-
-
 async function loadAnnouncements(page = 1, sortType = 'date_desc') {
     try {
         const response = await fetch(`/api/announcements?page=${page}&sort=${sortType}`);
