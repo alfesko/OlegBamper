@@ -288,7 +288,19 @@ input:focus, select:focus {
 .delete-checkbox:hover {
     background: rgba(255, 255, 255, 1);
 }
+.photo-container {
+    position: relative;
+    display: inline-block;
+    margin: 5px;
+}
 
+.photo-thumbnail {
+    max-width: 150px;
+    height: auto;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 5px;
+}
 .delete-checkbox:checked:before {
     content: '\2716';
     color: darkred;
