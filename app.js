@@ -439,6 +439,22 @@ app.put('/api/announcements/:id', upload.array('photos', 5), async (req, res) =>
             }
         }
 
+        const currentResult = await client.query('SELECT photos FROM announcements WHERE id = $1', [id]);
+        let currentPhotos = currentResult.rows[0].photos || [];
+
+        const photosToDelete = JSON.parse(req.body.photosToDelete || '[]');
+        if (photosToDelete.length > 0) {
+            // Удаляем фото из массива (сортировка по убыванию чтобы не сбивались индексы)
+            photosToDelete.sort((a, b) => b - a).forEach(index => {
+                if (index >= 0 && index < currentPhotos.length) {
+                    currentPhotos.splice(index, 1);
+                }
+            });
+        }
+
+        const newPhotos = req.files.map(file => file.path);
+        const updatedPhotos = [...currentPhotos, ...newPhotos];
+
         const {
             brand,
             year,
@@ -456,19 +472,20 @@ app.put('/api/announcements/:id', upload.array('photos', 5), async (req, res) =>
 
         const query = `
             UPDATE announcements
-            SET brand         = $1,
-                year          = $2,
-                model         = $3,
+            SET brand = $1,
+                year = $2,
+                model = $3,
                 engine_volume = $4,
-                transmission  = $5,
-                body_type     = $6,
-                description   = $7,
-                part_number   = $8,
-                fuel_type     = $9,
-                fuel_subtype  = $10,
-                part          = $11,
-                price         = $12
-            WHERE id = $13
+                transmission = $5,
+                body_type = $6,
+                description = $7,
+                part_number = $8,
+                fuel_type = $9,
+                fuel_subtype = $10,
+                part = $11,
+                price = $12,
+                photos = $13
+            WHERE id = $14
         `;
 
         const values = [
@@ -484,6 +501,7 @@ app.put('/api/announcements/:id', upload.array('photos', 5), async (req, res) =>
             fuelSubtype,
             part,
             price,
+            updatedPhotos,
             id
         ];
 
