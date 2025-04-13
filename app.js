@@ -544,7 +544,24 @@ app.delete('/api/announcements/:id', async (req, res) => {
             }
         }
 
+        const photosResult = await pool.query(
+            'SELECT photos FROM announcements WHERE id = $1',
+            [id]
+        );
+
         await pool.query('DELETE FROM announcements WHERE id = $1', [id]);
+
+        if (photosResult.rows.length > 0 && photosResult.rows[0].photos) {
+            const photos = photosResult.rows[0].photos;
+            for (const photoPath of photos) {
+                try {
+                    fs.unlinkSync(photoPath); // Удаляем файл
+                } catch (err) {
+                    console.error(`Ошибка при удалении файла ${photoPath}:`, err);
+                }
+            }
+        }
+
         res.status(200).send('Объявление успешно удалено');
     } catch (err) {
         console.error('Ошибка при удалении объявления:', err);
