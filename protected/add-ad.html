@@ -50,6 +50,7 @@
             <div class="form-row">
                 <label for="transmission">Коробка:</label>
                 <select id="transmission" name="transmission">
+                    <option value=""></option>
                     <option value="АКПП">АКПП</option>
                     <option value="МКПП">МКПП</option>
                     <option value="РОБОТ">Робот</option>
@@ -57,6 +58,7 @@
                 </select>
                 <label for="bodyType">Кузов:</label>
                 <select id="bodyType" name="bodyType">
+                    <option value=""></option>
                     <option value="Седан">Седан</option>
                     <option value="Универсал">Универсал</option>
                     <option value="хэтчбек">Хэтчбек</option>
@@ -76,8 +78,9 @@
                     <option value="погрузчик">Погрузчик</option>
                 </select>
             </div>
+            <label for="fuelType">Тип топлива:</label>
             <select id="fuelType" name="fuelType" onchange="updateFuelSubtype()">
-                <option value="" disabled selected>Выберите тип топлива</option>
+                <option value=""></option>
                 <option value="бензин">Бензин</option>
                 <option value="дизель">Дизель</option>
                 <option value="электро">Электро</option>

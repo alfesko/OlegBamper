@@ -47,6 +47,7 @@
 
             <label for="transmission">Коробка:</label>
             <select id="transmission" name="transmission">
+                <option value=""></option>
                 <option value="АКПП">АКПП</option>
                 <option value="МКПП">МКПП</option>
                 <option value="РОБОТ">Робот</option>
@@ -55,20 +56,36 @@
 
             <label for="bodyType">Кузов:</label>
             <select id="bodyType" name="bodyType">
+                <option value=""></option>
                 <option value="Седан">Седан</option>
                 <option value="Универсал">Универсал</option>
-                <option value="Хэтчбек">Хэтчбек</option>
-                <option value="Внедорожник">Внедорожник</option>
+                <option value="хэтчбек">Хэтчбек</option>
+                <option value="внедорожник">Внедорожник</option>
+                <option value="минивэн">Минивэн</option>
+                <option value="купе">Купе</option>
+                <option value="лифтбек">Лифтбек</option>
+                <option value="пикап">Пикап</option>
+                <option value="кабриолет">Кабриолет</option>
+                <option value="фургон">Фургон</option>
+                <option value="грузовик">Грузовик</option>
+                <option value="бортовой">Бортовой</option>
+                <option value="тягач">Тягач</option>
+                <option value="автобус">Автобус</option>
+                <option value="прицеп">Прицеп</option>
+                <option value="полуприцеп">Полуприцеп</option>
+                <option value="погрузчик">Погрузчик</option>
             </select>
 
             <label for="fuelType">Тип топлива:</label>
             <select id="fuelType" name="fuelType">
+                <option value=""></option>
                 <option value="бензин">Бензин</option>
                 <option value="дизель">Дизель</option>
                 <option value="электро">Электро</option>
                 <option value="гибрид">Гибрид</option>
             </select>
-
+            <label for="fuelSubtype" id="fuelSubtypeLabel" >Подтип топлива:</label>
+            <select id="fuelSubtype" name="fuelSubtype" ></select>
             <div style="position: relative;">
                 <label for="part">Запчасть:</label>
                 <input type="text" id="part" name="part" autocomplete="off" oninput="handlePartInput(this.value)">
@@ -80,6 +97,8 @@
 
             <label for="partNumber">Номер запчасти:</label>
             <input type="text" id="partNumber" name="partNumber">
+            <label for="article">Артикул:</label>
+            <input type="text" id="article" name="article">
             <label for="price">Цена (USD):</label>
             <input type="number" id="price" name="price" step="0.01" min="0" value="${announcement.price}" required>
             <label for="photos">Фото объявления:</label>
@@ -93,6 +112,49 @@
 </div>
 
 <script>
+    function updateFuelSubtype() {
+        const fuelType = document.getElementById('fuelType').value;
+        const fuelSubtypeSelect = document.getElementById('fuelSubtype');
+        const fuelSubtypeLabel = document.getElementById('fuelSubtypeLabel');
+
+        fuelSubtypeSelect.innerHTML = '';
+
+        if (fuelType === 'бензин') {
+            fuelSubtypeLabel.style.display = 'block';
+            fuelSubtypeSelect.style.display = 'block';
+            const benzineSubtypes = ["",
+                "EcoBoost", "FSI", "GDI", "HPi", "i", "i-VTEC",
+                "IDE", "JTS", "Kompr", "MPI", "TCE", "TFSI",
+                "THP", "Ti", "TSI", "VTEC", "VTI", "VVT-i", "карб", "МОНО"
+            ];
+            benzineSubtypes.forEach(subtype => {
+                const option = document.createElement('option');
+                option.value = subtype;
+                option.textContent = subtype;
+                fuelSubtypeSelect.appendChild(option);
+            });
+        } else if (fuelType === 'дизель') {
+            fuelSubtypeLabel.style.display = 'block';
+            fuelSubtypeSelect.style.display = 'block';
+            const dieselSubtypes = [
+                "BiTDi", "CDI", "CDT", "CDTi", "CRD", "CRDi",
+                "CTDi", "D", "D-4D", "D-CAT", "D5", "DCi",
+                "DDiS", "Di", "DiD", "DT", "DTH", "DTi", "DTL",
+                "HDi", "HPi", "HPT", "i-CTDi", "i-DTEC", "JTD",
+                "SDi", "TD", "TDCi", "TDDi", "TDI", "TDi PD",
+                "TiD", "VCDi", "XDI"
+            ];
+            dieselSubtypes.forEach(subtype => {
+                const option = document.createElement('option');
+                option.value = subtype;
+                option.textContent = subtype;
+                fuelSubtypeSelect.appendChild(option);
+            });
+        } else {
+            fuelSubtypeLabel.style.display = 'none';
+            fuelSubtypeSelect.style.display = 'none';
+        }
+    }
     let photosToDelete = [];
 
     async function loadAnnouncement() {
@@ -104,45 +166,65 @@
             if (!response.ok) throw new Error('Ошибка загрузки данных');
             const data = await response.json();
 
-            document.getElementById('brand').value = data.brand || '';
-            document.getElementById('year').value = data.year || '';
-            document.getElementById('model').value = data.model || '';
-            document.getElementById('engineVolume').value = data.engine_volume || '';
-            document.getElementById('transmission').value = data.transmission || 'АКПП';
-            document.getElementById('bodyType').value = data.body_type || 'Седан';
-            document.getElementById('fuelType').value = data.fuel_type || 'бензин';
-            document.getElementById('description').value = data.description || '';
-            document.getElementById('partNumber').value = data.part_number || '';
-            document.getElementById('part').value = data.part || '';
-            document.getElementById('price').value = data.price || ';'
+            const safeSetValue = (elementId, value) => {
+                const element = document.getElementById(elementId);
+                if (element) {
+                    element.value = value !== null && value !== undefined ? value : '';
+                }
+            };
+
+            safeSetValue('brand', data.brand);
+            safeSetValue('year', data.year);
+            safeSetValue('model', data.model);
+            safeSetValue('engineVolume', data.engine_volume);
+            safeSetValue('transmission', data.transmission);
+            safeSetValue('bodyType', data.body_type);
+            safeSetValue('fuelType', data.fuel_type);
+            safeSetValue('article', data.article);
+            safeSetValue('description', data.description);
+            safeSetValue('partNumber', data.part_number);
+            safeSetValue('part', data.part);
+            safeSetValue('price', data.price);
+
+            updateFuelSubtype();
+            if (data.fuel_subtype) {
+                safeSetValue('fuelSubtype', data.fuel_subtype);
+            }
 
             const photosContainer = document.getElementById('currentPhotos');
-            photosContainer.innerHTML = '';
-            if (data.photos && data.photos.length > 0) {
-                data.photos.forEach((photo, index) => {
-                    const photoContainer = document.createElement('div');
-                    photoContainer.classList.add('photo-container');
+            if (photosContainer) {
+                photosContainer.innerHTML = '';
+                if (data.photos && data.photos.length > 0) {
+                    data.photos.forEach((photo, index) => {
+                        const photoContainer = document.createElement('div');
+                        photoContainer.classList.add('photo-container');
 
-                    const img = document.createElement('img');
-                    img.src = photo;
-                    img.alt = "Фото объявления";
-                    img.classList.add('photo-thumbnail');
+                        const img = document.createElement('img');
+                        img.src = photo;
+                        img.alt = "Фото объявления";
+                        img.classList.add('photo-thumbnail');
 
-                    const checkbox = document.createElement('input');
-                    checkbox.type = 'checkbox';
-                    checkbox.classList.add('delete-checkbox');
-                    checkbox.onclick = () => markForDeletion(index);
+                        const checkbox = document.createElement('input');
+                        checkbox.type = 'checkbox';
+                        checkbox.classList.add('delete-checkbox');
+                        checkbox.onclick = () => markForDeletion(index);
 
-                    photoContainer.appendChild(img);
-                    photoContainer.appendChild(checkbox);
-                    photosContainer.appendChild(photoContainer);
-                });
+                        photoContainer.appendChild(img);
+                        photoContainer.appendChild(checkbox);
+                        photosContainer.appendChild(photoContainer);
+                    });
+                }
             }
         } catch (error) {
+            console.error('Ошибка загрузки объявления:', error);
             alert('Не удалось загрузить объявление: ' + error.message);
             window.location.href = '/';
         }
     }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loadAnnouncement();
+    });
 
     const parts = [
         {
