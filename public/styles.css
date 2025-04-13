@@ -293,7 +293,13 @@ input:focus, select:focus {
     display: inline-block;
     margin: 5px;
 }
+.admin-only {
+    display: none;
+}
 
+.admin-only.show {
+    display: block;
+}
 .photo-thumbnail {
     max-width: 150px;
     height: auto;

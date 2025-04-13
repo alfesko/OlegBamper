@@ -34,22 +34,23 @@
         </div>
     </div>
 </header>
-<div class="currency-edit">
-    <h3>Редактировать курсы валют</h3>
-    <form id="currencyForm">
-        <label for="eur">1 EUR =</label>
-        <input type="number" id="eur" name="eur" class="currency-input" step="0.0001" required>
+<div class="admin-only">
+    <div class="currency-edit">
+        <h3>Редактировать курсы валют</h3>
+        <form id="currencyForm">
+            <label for="eur">1 EUR =</label>
+            <input type="number" id="eur" name="eur" class="currency-input" step="0.0001" required>
 
-        <label for="usd">1 USD =</label>
-        <input type="number" id="usd" name="usd" class="currency-input" step="0.0001" required>
+            <label for="usd">1 USD =</label>
+            <input type="number" id="usd" name="usd" class="currency-input" step="0.0001" required>
 
-        <label for="rub">100 RUB =</label>
-        <input type="number" id="rub" name="rub" class="currency-input" step="0.0001" required>
+            <label for="rub">100 RUB =</label>
+            <input type="number" id="rub" name="rub" class="currency-input" step="0.0001" required>
 
-        <button type="submit">Сохранить курсы</button>
-    </form>
+            <button type="submit">Сохранить курсы</button>
+        </form>
+    </div>
 </div>
-
 <div class="main-content">
     <div class="container">
         <h2>Выбор запчастей</h2>
@@ -9063,6 +9064,11 @@
         try {
             const response = await fetch('/auth-status');
             const data = await response.json();
+            const adminElements = document.querySelectorAll('.admin-only');
+            adminElements.forEach(el => {
+                el.classList.toggle('show', data.isAdmin || false);
+            });
+
             return {
                 loggedIn: data.loggedIn || false,
                 userId: data.userId || null,
