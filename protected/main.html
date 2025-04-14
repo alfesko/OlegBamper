@@ -48,6 +48,7 @@
             <input type="number" id="rub" name="rub" class="currency-input" step="0.0001" required>
 
             <button type="submit">Сохранить курсы</button>
+            <button type="button" id="fetchRatesBtn" class="fetch-rates-btn">Обновить курсы с сайта НБРБ</button>
         </form>
     </div>
 </div>
@@ -9202,6 +9203,7 @@
             authButton.onclick = authData.loggedIn ? logout : () => window.location.href = '/login';
 
             await loadCurrencyRates();
+            document.getElementById('fetchRatesBtn').addEventListener('click', fetchRatesFromNBRB);
         } catch (error) {
             console.error('Ошибка при загрузке страницы:', error);
         }
@@ -9522,7 +9524,7 @@
         const params = new URLSearchParams(formData);
 
         params.append('page', currentPage);
-        params.append('limit', 3); // Добавляем limit
+        params.append('limit', 3);
         params.append('sort', currentSortType);
 
         try {
@@ -9573,7 +9575,43 @@
             alert('Ошибка при отправке данных');
         }
     });
+    async function fetchRatesFromNBRB() {
+        try {
+            const fetchBtn = document.getElementById('fetchRatesBtn');
+            fetchBtn.disabled = true;
+            fetchBtn.textContent = 'Загрузка...';
 
+            const today = new Date();
+            const formattedDate = `${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, '0')}-${today.getDate().toString().padStart(2, '0')}`;
+
+            const [eurResponse, usdResponse, rubResponse] = await Promise.all([
+                fetch(`https://api.nbrb.by/exrates/rates/EUR?parammode=2&ondate=${formattedDate}`),
+                fetch(`https://api.nbrb.by/exrates/rates/USD?parammode=2&ondate=${formattedDate}`),
+                fetch(`https://api.nbrb.by/exrates/rates/RUB?parammode=2&ondate=${formattedDate}`)
+            ]);
+
+            if (!eurResponse.ok || !usdResponse.ok || !rubResponse.ok) {
+                throw new Error('Ошибка при получении данных от НБРБ');
+            }
+
+            const eurData = await eurResponse.json();
+            const usdData = await usdResponse.json();
+            const rubData = await rubResponse.json();
+            document.getElementById('eur').value = eurData.Cur_OfficialRate;
+            document.getElementById('usd').value = usdData.Cur_OfficialRate;
+            document.getElementById('rub').value = (rubData.Cur_OfficialRate).toFixed(4);
+            fetchBtn.textContent = 'Обновить курсы с сайта НБРБ';
+            fetchBtn.disabled = false;
+
+            alert('Курсы успешно загружены с сайта Нацбанка РБ!');
+        } catch (error) {
+            console.error('Ошибка при загрузке курсов:', error);
+            const fetchBtn = document.getElementById('fetchRatesBtn');
+            fetchBtn.textContent = 'Обновить курсы с сайта НБРБ';
+            fetchBtn.disabled = false;
+            alert('Не удалось загрузить курсы валют. Пожалуйста, попробуйте позже или введите значения вручную.');
+        }
+    }
     async function loadCurrencyRates() {
         try {
             const response = await fetch('/api/currency-rates');
