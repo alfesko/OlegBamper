@@ -324,9 +324,7 @@ input:focus, select:focus {
     padding: 10px;
 }
 
-.sticky-search.scrolled .search-form {
-    overflow-y: auto;
-}
+
 @media (max-width: 768px) {
     .header {
         flex-direction: column;
