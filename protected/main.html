@@ -53,79 +53,81 @@
     </div>
 </div>
 <div class="main-content">
-    <div class="container">
-        <h2>Выбор запчастей</h2>
-        <form action="/search" method="get" class="search-form">
-            <label for="brand">Марка:</label>
-            <input type="text" id="brand" name="brand" autocomplete="off" oninput="handleBrandInput(this.value)">
-            <div id="brand-autocomplete" class="autocomplete-items"></div>
+    <div id="stickySearch" class="sticky-search">
+        <div class="container">
+            <h2>Выбор запчастей</h2>
+            <form action="/search" method="get" class="search-form">
+                <label for="brand">Марка:</label>
+                <input type="text" id="brand" name="brand" autocomplete="off" oninput="handleBrandInput(this.value)">
+                <div id="brand-autocomplete" class="autocomplete-items"></div>
 
-            <label for="year">Год выпуска:</label>
-            <input type="text" id="year" name="year" autocomplete="off" oninput="handleYearInput(this.value)">
-            <div id="year-autocomplete" class="autocomplete-items"></div>
+                <label for="year">Год выпуска:</label>
+                <input type="text" id="year" name="year" autocomplete="off" oninput="handleYearInput(this.value)">
+                <div id="year-autocomplete" class="autocomplete-items"></div>
 
-            <label for="model">Модель:</label>
-            <input type="text" id="model" name="model" autocomplete="off" oninput="handleModelInput(this.value)">
-            <div id="model-autocomplete" class="autocomplete-items"></div>
+                <label for="model">Модель:</label>
+                <input type="text" id="model" name="model" autocomplete="off" oninput="handleModelInput(this.value)">
+                <div id="model-autocomplete" class="autocomplete-items"></div>
 
-            <label for="engineVolume">Объем:</label>
-            <input type="text" id="engineVolume" name="engineVolume">
+                <label for="engineVolume">Объем:</label>
+                <input type="text" id="engineVolume" name="engineVolume">
 
-            <label for="transmission">Коробка:</label>
-            <select id="transmission" name="transmission">
-                <option value=""></option>
-                <option value="АКПП">АКПП</option>
-                <option value="МКПП">МКПП</option>
-                <option value="РОБОТ">Робот</option>
-                <option value="ВАРИАТОР">Вариатор</option>
-            </select>
+                <label for="transmission">Коробка:</label>
+                <select id="transmission" name="transmission">
+                    <option value=""></option>
+                    <option value="АКПП">АКПП</option>
+                    <option value="МКПП">МКПП</option>
+                    <option value="РОБОТ">Робот</option>
+                    <option value="ВАРИАТОР">Вариатор</option>
+                </select>
 
-            <label for="bodyType">Кузов:</label>
-            <select id="bodyType" name="bodyType">
-                <option value=""></option>
-                <option value="Седан">Седан</option>
-                <option value="Универсал">Универсал</option>
-                <option value="хэтчбек">Хэтчбек</option>
-                <option value="внедорожник">Внедорожник</option>
-                <option value="минивэн">Минивэн</option>
-                <option value="купе">Купе</option>
-                <option value="лифтбек">Лифтбек</option>
-                <option value="пикап">Пикап</option>
-                <option value="кабриолет">Кабриолет</option>
-                <option value="фургон">Фургон</option>
-                <option value="грузовик">Грузовик</option>
-                <option value="бортовой">Бортовой</option>
-                <option value="тягач">Тягач</option>
-                <option value="автобус">Автобус</option>
-                <option value="прицеп">Прицеп</option>
-                <option value="полуприцеп">Полуприцеп</option>
-                <option value="погрузчик">Погрузчик</option>
-            </select>
+                <label for="bodyType">Кузов:</label>
+                <select id="bodyType" name="bodyType">
+                    <option value=""></option>
+                    <option value="Седан">Седан</option>
+                    <option value="Универсал">Универсал</option>
+                    <option value="хэтчбек">Хэтчбек</option>
+                    <option value="внедорожник">Внедорожник</option>
+                    <option value="минивэн">Минивэн</option>
+                    <option value="купе">Купе</option>
+                    <option value="лифтбек">Лифтбек</option>
+                    <option value="пикап">Пикап</option>
+                    <option value="кабриолет">Кабриолет</option>
+                    <option value="фургон">Фургон</option>
+                    <option value="грузовик">Грузовик</option>
+                    <option value="бортовой">Бортовой</option>
+                    <option value="тягач">Тягач</option>
+                    <option value="автобус">Автобус</option>
+                    <option value="прицеп">Прицеп</option>
+                    <option value="полуприцеп">Полуприцеп</option>
+                    <option value="погрузчик">Погрузчик</option>
+                </select>
 
-            <label for="fuelType">Тип топлива:</label>
-            <select id="fuelType" name="fuelType">
-                <option value=""></option>
-                <option value="бензин">Бензин</option>
-                <option value="дизель">Дизель</option>
-                <option value="электро">Электро</option>
-                <option value="гибрид">Гибрид</option>
-            </select>
+                <label for="fuelType">Тип топлива:</label>
+                <select id="fuelType" name="fuelType">
+                    <option value=""></option>
+                    <option value="бензин">Бензин</option>
+                    <option value="дизель">Дизель</option>
+                    <option value="электро">Электро</option>
+                    <option value="гибрид">Гибрид</option>
+                </select>
 
-            <label for="fuelSubtype" id="fuelSubtypeLabel" style="display:none;">Подтип топлива:</label>
-            <select id="fuelSubtype" name="fuelSubtype" style="display:none;"></select>
+                <label for="fuelSubtype" id="fuelSubtypeLabel" style="display:none;">Подтип топлива:</label>
+                <select id="fuelSubtype" name="fuelSubtype" style="display:none;"></select>
 
-            <label for="article">Артикул объявления:</label>
-            <input type="text" id="article" name="article">
+                <label for="article">Артикул объявления:</label>
+                <input type="text" id="article" name="article">
 
-            <label for="part">Запчасть:</label>
-            <input type="text" id="part" name="part" autocomplete="off" oninput="handlePartInput(this.value)">
-            <div id="part-autocomplete" class="autocomplete-items"></div>
+                <label for="part">Запчасть:</label>
+                <input type="text" id="part" name="part" autocomplete="off" oninput="handlePartInput(this.value)">
+                <div id="part-autocomplete" class="autocomplete-items"></div>
 
-            <label for="partNumber">Номер запчасти:</label>
-            <input type="text" id="partNumber" name="partNumber">
+                <label for="partNumber">Номер запчасти:</label>
+                <input type="text" id="partNumber" name="partNumber">
 
-            <button type="submit">Поиск</button>
-        </form>
+                <button type="submit">Поиск</button>
+            </form>
+        </div>
     </div>
 
     <div class="announcements-controls">
@@ -9545,7 +9547,14 @@
             console.error('Ошибка:', error);
         }
     });
-
+    window.addEventListener('scroll', function() {
+        const stickySearch = document.getElementById('stickySearch');
+        if (window.scrollY > 100) {
+            stickySearch.classList.add('scrolled');
+        } else {
+            stickySearch.classList.remove('scrolled');
+        }
+    });
     document.getElementById('currencyForm').addEventListener('submit', async (e) => {
         e.preventDefault();
 
@@ -9575,6 +9584,7 @@
             alert('Ошибка при отправке данных');
         }
     });
+
     async function fetchRatesFromNBRB() {
         try {
             const fetchBtn = document.getElementById('fetchRatesBtn');
@@ -9612,6 +9622,7 @@
             alert('Не удалось загрузить курсы валют. Пожалуйста, попробуйте позже или введите значения вручную.');
         }
     }
+
     async function loadCurrencyRates() {
         try {
             const response = await fetch('/api/currency-rates');

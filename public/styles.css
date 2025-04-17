@@ -311,7 +311,22 @@ input:focus, select:focus {
     content: '\2716';
     color: darkred;
 }
+.sticky-search {
+    position: sticky;
+    top: 0;
+    background: white;
+    z-index: 100;
+    padding: 15px;
+    transition: all 0.3s ease;
+}
 
+.sticky-search.scrolled {
+    padding: 10px;
+}
+
+.sticky-search.scrolled .search-form {
+    overflow-y: auto;
+}
 @media (max-width: 768px) {
     .header {
         flex-direction: column;
