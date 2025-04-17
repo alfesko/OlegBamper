@@ -32,10 +32,14 @@ app.get('/register', (req, res) => {
 });
 
 app.post('/register', async (req, res) => {
-    const {username, password} = req.body;
+    const {username, password, confirmPassword} = req.body;
 
-    if (!username || !password) {
+    if (!username || !password || !confirmPassword) {
         return res.status(400).send('Заполните все поля.');
+    }
+
+    if (password !== confirmPassword) {
+        return res.status(400).send('Пароли не совпадают.');
     }
 
     try {

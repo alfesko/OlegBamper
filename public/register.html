@@ -30,9 +30,11 @@
 </header>
 <div class="container">
     <h2>Регистрация</h2>
-    <form action="/register" method="post">
+    <form id="registerForm" action="/register" method="post">
         <input type="text" name="username" placeholder="Имя пользователя" required>
-        <input type="password" name="password" placeholder="Пароль" required>
+        <input type="password" name="password" id="password" placeholder="Пароль" required>
+        <input type="password" name="confirmPassword" id="confirmPassword" placeholder="Повторите пароль" required>
+        <div id="passwordMismatch" class="password-mismatch">Пароли не совпадают</div>
         <button type="submit">Зарегистрироваться</button>
     </form>
     <p>Уже есть аккаунт? <a href="/login" class="button-link">Войти</a></p>
@@ -44,6 +46,33 @@
     </div>
     <p>© ИП Щука О.Е., УНП 590236855, 22.04.2004, shchuka1971@mail.ru</p>
 </div>
+<script>
+    document.getElementById('registerForm').addEventListener('submit', function(e) {
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+        const mismatchError = document.getElementById('passwordMismatch');
+
+        if (password !== confirmPassword) {
+            e.preventDefault();
+            mismatchError.style.display = 'block';
+            document.getElementById('confirmPassword').focus();
+        } else {
+            mismatchError.style.display = 'none';
+        }
+    });
+
+    document.getElementById('confirmPassword').addEventListener('input', function() {
+        const password = document.getElementById('password').value;
+        const confirmPassword = this.value;
+        const mismatchError = document.getElementById('passwordMismatch');
+
+        if (password !== confirmPassword && confirmPassword.length > 0) {
+            mismatchError.style.display = 'block';
+        } else {
+            mismatchError.style.display = 'none';
+        }
+    });
+</script>
 <script src="/scripts.js"></script>
 </body>
 </html>
