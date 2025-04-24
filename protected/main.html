@@ -9363,21 +9363,38 @@
         const autocompleteContainer = document.getElementById('part-autocomplete');
         autocompleteContainer.innerHTML = '';
 
-        if (!value) return;
+        if (!value) {
+            autocompleteContainer.style.display = 'none';
+            return;
+        }
 
-        const filteredParts = parts.filter(part => part.label.toLowerCase().includes(value.toLowerCase()));
+        const filteredParts = parts.filter(part =>
+            part.label.toLowerCase().includes(value.toLowerCase())
+        );
+
+        if (filteredParts.length === 0) {
+            autocompleteContainer.style.display = 'none';
+            return;
+        }
 
         filteredParts.forEach(part => {
             const div = document.createElement('div');
             div.innerHTML = part.label;
-            div.addEventListener('click', function () {
+            div.addEventListener('click', function() {
                 document.getElementById('part').value = part.label;
-                autocompleteContainer.innerHTML = '';
+                autocompleteContainer.style.display = 'none';
             });
             autocompleteContainer.appendChild(div);
         });
-    }
 
+        autocompleteContainer.style.display = 'block';
+    }
+    document.addEventListener('click', function(e) {
+        if (!e.target.matches('#part') && !e.target.matches('.autocomplete-items div')) {
+            const autocompleteContainer = document.getElementById('part-autocomplete');
+            autocompleteContainer.style.display = 'none';
+        }
+    });
     let currentPage = 1;
     let currentSortType = 'date_desc';
 

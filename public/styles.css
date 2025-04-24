@@ -371,9 +371,54 @@ input:focus, select:focus {
 .sticky-search.scrolled {
     padding: 10px;
 }
+.autocomplete-items {
+    border: 1px solid #ddd;
+    border-bottom: none;
+    border-top: none;
+    z-index: 99;
+    top: 100%;
+    left: 0;
+    right: 0;
 
+    max-height: 200px;
+    width: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    scrollbar-width: thin;
+    scrollbar-color: #e74c3c #f1f1f1;
+}
+
+.autocomplete-items::-webkit-scrollbar {
+    width: 8px;
+}
+
+.autocomplete-items::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.autocomplete-items::-webkit-scrollbar-thumb {
+    background-color: #e74c3c;
+    border-radius: 4px;
+}
+
+.autocomplete-items div {
+    padding: 10px;
+    cursor: pointer;
+    background-color: #fff;
+    border-bottom: 1px solid #ddd;
+    transition: background-color 0.3s;
+}
+
+.autocomplete-items div:hover {
+    background-color: #f8f8f8;
+}
 
 @media (max-width: 768px) {
+    .autocomplete-items {
+        max-height: 150px;
+    }
     .header {
         flex-direction: column;
         padding: 1rem;
