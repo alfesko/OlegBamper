@@ -9083,6 +9083,69 @@
         }
     }
 
+    async function showAnnouncementDetails(announcementId) {
+        try {
+            document.getElementById('pagination').style.display = 'none';
+            const response = await fetch(`/api/announcements/${announcementId}`);
+            const announcement = await response.json();
+
+            const priceByn = announcement.price_byn.toFixed(2) || (announcement.price * currentRates.usd_to_byn).toFixed(2);
+            const priceEur = announcement.price_eur.toFixed(2) || (announcement.price * currentRates.usd_to_byn / currentRates.eur_to_byn).toFixed(2);
+            const priceRub = announcement.price_rub.toFixed(2) || (announcement.price * currentRates.usd_to_byn / currentRates.rub_to_byn * 100).toFixed(2);
+
+            const detailsHTML = `
+            <div class="announcement-details">
+                 <button class="back-btn" onclick="window.location.href='/'">Назад к списку</button>
+                <h2>${announcement.brand} ${announcement.model} (${announcement.year})</h2>
+
+                <div class="photo-gallery">
+                    ${announcement.photos.map(photo =>
+                `<img src="${photo}" alt="Фото объявления">`
+            ).join('')}
+                </div>
+
+                <div class="details-content">
+                    <div class="details-section">
+                        <h3>Основные характеристики</h3>
+                        <p><strong>Год выпуска:</strong> ${announcement.year || 'Не указано'}</p>
+                        <p><strong>Объем двигателя:</strong> ${announcement.engine_volume || 'Не указано'}</p>
+                        <p><strong>Тип топлива:</strong> ${announcement.fuel_type || 'Не указано'}</p>
+                        <p><strong>Подтип топлива:</strong> ${announcement.fuel_subtype || 'Не указано'}</p>
+                        <p><strong>Коробка передач:</strong> ${announcement.transmission || 'Не указано'}</p>
+                        <p><strong>Тип кузова:</strong> ${announcement.body_type || 'Не указано'}</p>
+                    </div>
+
+                    <div class="details-section">
+                        <h3>Цена</h3>
+                        <p><strong>USD:</strong> ${announcement.price || 'Не указана'}</p>
+                        <p><strong>BYN:</strong> ${priceByn}</p>
+                        <p><strong>EUR:</strong> ${priceEur}</p>
+                        <p><strong>RUB:</strong> ${priceRub}</p>
+                    </div>
+
+                    <div class="details-section">
+                        <h3>Детали запчасти</h3>
+                        <p><strong>Название:</strong> ${announcement.part || 'Не указано'}</p>
+                        <p><strong>Номер запчасти:</strong> ${announcement.part_number || 'Не указан'}</p>
+                        <p><strong>Артикул:</strong> ${announcement.article || 'Не указан'}</p>
+                    </div>
+
+                    <div class="details-section">
+                        <h3>Описание</h3>
+                        <p>${announcement.description || 'Нет описания'}</p>
+                    </div>
+                </div>
+            </div>
+        `;
+
+            document.querySelector('.main-content').innerHTML = detailsHTML;
+
+        } catch (error) {
+            console.error('Ошибка при загрузке объявления:', error);
+            alert('Не удалось загрузить данные объявления');
+        }
+    }
+
     function displayAnnouncements(announcements, currentUserId, isAdmin) {
         const announcementsContainer = document.getElementById('announcements');
         announcementsContainer.innerHTML = '';
@@ -9097,7 +9160,6 @@
             const date = new Date(announcement.created_at);
             const formattedDate = `${date.getDate().toString().padStart(2, '0')}.${(date.getMonth() + 1).toString().padStart(2, '0')}.${date.getFullYear()} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
 
-            // Создаем HTML только для непустых полей
             const fields = [
                 {name: 'Год', value: announcement.year},
                 {name: 'Объем', value: announcement.engine_volume},
@@ -9189,7 +9251,9 @@
 
                 showSlide(0);
             }
-
+            announcementElement.addEventListener('click', () => {
+                showAnnouncementDetails(announcement.id);
+            });
             announcementsContainer.appendChild(announcementElement);
         }
     }
@@ -9547,7 +9611,7 @@
             console.error('Ошибка:', error);
         }
     });
-    window.addEventListener('scroll', function() {
+    window.addEventListener('scroll', function () {
         const stickySearch = document.getElementById('stickySearch');
         if (window.scrollY > 100) {
             stickySearch.classList.add('scrolled');
@@ -9622,20 +9686,19 @@
             alert('Не удалось загрузить курсы валют. Пожалуйста, попробуйте позже или введите значения вручную.');
         }
     }
+    let currentRates = { usd_to_byn: 1, eur_to_byn: 1, rub_to_byn: 1 };
 
     async function loadCurrencyRates() {
         try {
             const response = await fetch('/api/currency-rates');
             if (response.ok) {
-                const data = await response.json();
-                document.getElementById('eur').value = data.eur_to_byn;
-                document.getElementById('usd').value = data.usd_to_byn;
-                document.getElementById('rub').value = data.rub_to_byn;
-            } else {
-                console.error('Ошибка при загрузке курсов валют');
+                currentRates = await response.json();
+                document.getElementById('eur').value = currentRates.eur_to_byn;
+                document.getElementById('usd').value = currentRates.usd_to_byn;
+                document.getElementById('rub').value = currentRates.rub_to_byn;
             }
         } catch (error) {
-            console.error('Ошибка:', error);
+            console.error('Ошибка загрузки курсов:', error);
         }
     }
 

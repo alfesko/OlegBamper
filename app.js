@@ -267,20 +267,32 @@ app.post('/submit-ad', (req, res) => {
     res.send('Объявление успешно добавлено!');
 });
 app.get('/api/announcements/:id', async (req, res) => {
-    const {id} = req.params;
     try {
-        const client = await pool.connect();
-        const result = await client.query('SELECT * FROM announcements WHERE id = $1', [id]);
-        client.release();
+        const { id } = req.params;
+        const result = await pool.query(`
+            SELECT 
+                a.*,
+                (SELECT usd_to_byn FROM currency_rates ORDER BY updated_at DESC LIMIT 1) as usd_to_byn,
+                (SELECT eur_to_byn FROM currency_rates ORDER BY updated_at DESC LIMIT 1) as eur_to_byn,
+                (SELECT rub_to_byn FROM currency_rates ORDER BY updated_at DESC LIMIT 1) as rub_to_byn
+            FROM announcements a
+            WHERE a.id = $1
+        `, [id]);
 
         if (result.rows.length === 0) {
-            return res.status(404).json({error: 'Объявление не найдено'});
+            return res.status(404).json({ error: 'Объявление не найдено' });
         }
 
-        res.json(result.rows[0]);
+        const announcement = result.rows[0];
+        res.json({
+            ...announcement,
+            price_byn: announcement.price * announcement.usd_to_byn,
+            price_eur: announcement.price * announcement.usd_to_byn / announcement.eur_to_byn,
+            price_rub: announcement.price * announcement.usd_to_byn / announcement.rub_to_byn * 100
+        });
     } catch (err) {
-        console.error('Ошибка при получении объявления:', err);
-        res.status(500).json({error: 'Ошибка сервера'});
+        console.error('Ошибка:', err);
+        res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
 

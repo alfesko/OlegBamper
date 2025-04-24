@@ -249,7 +249,55 @@ input:focus, select:focus {
     gap: 0.5rem;
     margin: 1rem 0;
 }
+.announcement-details {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
 
+.back-btn {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    margin-bottom: 20px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.photo-gallery {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 30px;
+}
+
+.photo-gallery img {
+    max-width: 300px;
+    max-height: 200px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.details-content {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+}
+
+.details-section {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.details-section h3 {
+    color: #e74c3c;
+    margin-top: 0;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
 #pagination button {
     min-width: 40px;
 }
