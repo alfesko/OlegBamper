@@ -47,7 +47,7 @@
     <p>© ИП Щука О.Е., УНП 590236855, 22.04.2004, shchuka1971@mail.ru</p>
 </div>
 <script>
-    document.getElementById('registerForm').addEventListener('submit', function(e) {
+    document.getElementById('registerForm').addEventListener('submit', function (e) {
         const password = document.getElementById('password').value;
         const confirmPassword = document.getElementById('confirmPassword').value;
         const mismatchError = document.getElementById('passwordMismatch');
@@ -61,7 +61,7 @@
         }
     });
 
-    document.getElementById('confirmPassword').addEventListener('input', function() {
+    document.getElementById('confirmPassword').addEventListener('input', function () {
         const password = document.getElementById('password').value;
         const confirmPassword = this.value;
         const mismatchError = document.getElementById('passwordMismatch');

@@ -222,7 +222,7 @@ app.get('/logout', (req, res) => {
 
 app.get('/auth-status', async (req, res) => {
     if (!req.session.userId) {
-        return res.json({ loggedIn: false });
+        return res.json({loggedIn: false});
     }
 
     try {
@@ -238,11 +238,11 @@ app.get('/auth-status', async (req, res) => {
                 isAdmin: result.rows[0].is_admin
             });
         } else {
-            res.json({ loggedIn: false });
+            res.json({loggedIn: false});
         }
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: 'Ошибка сервера' });
+        res.status(500).json({error: 'Ошибка сервера'});
     }
 });
 
@@ -268,11 +268,10 @@ app.post('/submit-ad', (req, res) => {
 });
 app.get('/api/announcements/:id', async (req, res) => {
     try {
-        const { id } = req.params;
+        const {id} = req.params;
         const result = await pool.query(`
-            SELECT 
-                a.*,
-                (SELECT usd_to_byn FROM currency_rates ORDER BY updated_at DESC LIMIT 1) as usd_to_byn,
+            SELECT a.*,
+                   (SELECT usd_to_byn FROM currency_rates ORDER BY updated_at DESC LIMIT 1) as usd_to_byn,
                 (SELECT eur_to_byn FROM currency_rates ORDER BY updated_at DESC LIMIT 1) as eur_to_byn,
                 (SELECT rub_to_byn FROM currency_rates ORDER BY updated_at DESC LIMIT 1) as rub_to_byn
             FROM announcements a
@@ -280,7 +279,7 @@ app.get('/api/announcements/:id', async (req, res) => {
         `, [id]);
 
         if (result.rows.length === 0) {
-            return res.status(404).json({ error: 'Объявление не найдено' });
+            return res.status(404).json({error: 'Объявление не найдено'});
         }
 
         const announcement = result.rows[0];
@@ -292,7 +291,7 @@ app.get('/api/announcements/:id', async (req, res) => {
         });
     } catch (err) {
         console.error('Ошибка:', err);
-        res.status(500).json({ error: 'Ошибка сервера' });
+        res.status(500).json({error: 'Ошибка сервера'});
     }
 });
 
@@ -345,7 +344,7 @@ async function getCurrencyRates() {
 
 app.get('/api/announcements', async (req, res) => {
     try {
-        const { user_id, page = 1, limit = 3, sort = 'date_desc' } = req.query;
+        const {user_id, page = 1, limit = 3, sort = 'date_desc'} = req.query;
         const offset = (page - 1) * limit;
 
         const client = await pool.connect();
@@ -368,7 +367,7 @@ app.get('/api/announcements', async (req, res) => {
         }
 
         let query = `
-            SELECT a.*, 
+            SELECT a.*,
                    (a.user_id = $1) AS is_owner
             FROM announcements a
         `;
@@ -383,7 +382,8 @@ app.get('/api/announcements', async (req, res) => {
         query += ` ORDER BY ${orderBy} LIMIT $${paramIndex++} OFFSET $${paramIndex++}`;
         values.push(parseInt(limit), parseInt(offset));
 
-        let countQuery = `SELECT COUNT(*) FROM announcements`;
+        let countQuery = `SELECT COUNT(*)
+                          FROM announcements`;
         const countValues = [];
         if (user_id) {
             countQuery += ` WHERE user_id = $1`;
@@ -434,7 +434,7 @@ app.put('/api/announcements/:id', upload.array('photos', 5), async (req, res) =>
     }
 
     const userId = req.session.userId;
-    const { id } = req.params;
+    const {id} = req.params;
 
     try {
         const client = await pool.connect();
@@ -488,19 +488,19 @@ app.put('/api/announcements/:id', upload.array('photos', 5), async (req, res) =>
 
         const query = `
             UPDATE announcements
-            SET brand = $1,
-                year = $2,
-                model = $3,
+            SET brand         = $1,
+                year          = $2,
+                model         = $3,
                 engine_volume = $4,
-                transmission = $5,
-                body_type = $6,
-                description = $7,
-                part_number = $8,
-                fuel_type = $9,
-                fuel_subtype = $10,
-                part = $11,
-                price = $12,
-                photos = $13
+                transmission  = $5,
+                body_type     = $6,
+                description   = $7,
+                part_number   = $8,
+                fuel_type     = $9,
+                fuel_subtype  = $10,
+                part          = $11,
+                price         = $12,
+                photos        = $13
             WHERE id = $14
         `;
 
@@ -538,7 +538,7 @@ app.delete('/api/announcements/:id', async (req, res) => {
 
     try {
         const userId = req.session.userId;
-        const { id } = req.params;
+        const {id} = req.params;
         const userResult = await pool.query(
             'SELECT is_admin FROM users WHERE id = $1',
             [userId]
@@ -643,10 +643,10 @@ app.get('/search', async (req, res) => {
         }
 
         let query = `
-            SELECT a.*, 
+            SELECT a.*,
                    (a.user_id = $1) AS is_owner
             FROM announcements a
-            WHERE 1=1
+            WHERE 1 = 1
         `;
         const values = [req.session.userId || null];
         let paramIndex = 2;
@@ -699,7 +699,9 @@ app.get('/search', async (req, res) => {
         query += ` ORDER BY ${orderBy} LIMIT $${paramIndex++} OFFSET $${paramIndex++}`;
         values.push(parseInt(limit), parseInt(offset));
 
-        let countQuery = `SELECT COUNT(*) FROM announcements WHERE 1=1`;
+        let countQuery = `SELECT COUNT(*)
+                          FROM announcements
+                          WHERE 1 = 1`;
         const countValues = [];
         let countParamIndex = 1;
 
@@ -786,9 +788,10 @@ app.get('/search', async (req, res) => {
         res.status(500).json({error: 'Ошибка сервера'});
     }
 });
+
 async function requireAdmin(req, res, next) {
     if (!req.session.userId) {
-        return res.status(401).json({ error: 'Требуется авторизация' });
+        return res.status(401).json({error: 'Требуется авторизация'});
     }
 
     try {
@@ -800,15 +803,16 @@ async function requireAdmin(req, res, next) {
         if (result.rows[0]?.is_admin) {
             next();
         } else {
-            res.status(403).json({ error: 'Требуются права администратора' });
+            res.status(403).json({error: 'Требуются права администратора'});
         }
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: 'Ошибка сервера' });
+        res.status(500).json({error: 'Ошибка сервера'});
     }
 }
+
 app.post('/api/currency-rates', requireAdmin, async (req, res) => {
-    const { eur, usd, rub } = req.body;
+    const {eur, usd, rub} = req.body;
 
     if (!eur || !usd || !rub) {
         return res.status(400).json({error: 'Все поля обязательны'});

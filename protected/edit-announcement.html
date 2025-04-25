@@ -85,8 +85,8 @@
                 <option value="электро">Электро</option>
                 <option value="гибрид">Гибрид</option>
             </select>
-            <label for="fuelSubtype" id="fuelSubtypeLabel" >Подтип топлива:</label>
-            <select id="fuelSubtype" name="fuelSubtype" ></select>
+            <label for="fuelSubtype" id="fuelSubtypeLabel">Подтип топлива:</label>
+            <select id="fuelSubtype" name="fuelSubtype"></select>
             <div style="position: relative;">
                 <label for="part">Запчасть:</label>
                 <input type="text" id="part" name="part" autocomplete="off" oninput="handlePartInput(this.value)">
@@ -156,6 +156,7 @@
             fuelSubtypeSelect.style.display = 'none';
         }
     }
+
     let photosToDelete = [];
 
     async function loadAnnouncement() {

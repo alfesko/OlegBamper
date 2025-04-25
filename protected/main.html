@@ -9380,7 +9380,7 @@
         filteredParts.forEach(part => {
             const div = document.createElement('div');
             div.innerHTML = part.label;
-            div.addEventListener('click', function() {
+            div.addEventListener('click', function () {
                 document.getElementById('part').value = part.label;
                 autocompleteContainer.style.display = 'none';
             });
@@ -9389,7 +9389,8 @@
 
         autocompleteContainer.style.display = 'block';
     }
-    document.addEventListener('click', function(e) {
+
+    document.addEventListener('click', function (e) {
         if (!e.target.matches('#part') && !e.target.matches('.autocomplete-items div')) {
             const autocompleteContainer = document.getElementById('part-autocomplete');
             autocompleteContainer.style.display = 'none';
@@ -9703,7 +9704,8 @@
             alert('Не удалось загрузить курсы валют. Пожалуйста, попробуйте позже или введите значения вручную.');
         }
     }
-    let currentRates = { usd_to_byn: 1, eur_to_byn: 1, rub_to_byn: 1 };
+
+    let currentRates = {usd_to_byn: 1, eur_to_byn: 1, rub_to_byn: 1};
 
     async function loadCurrencyRates() {
         try {
