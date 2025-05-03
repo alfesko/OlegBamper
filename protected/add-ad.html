@@ -33,13 +33,13 @@
         <button onclick="window.location.href='/';" class="home-btn">На главную</button>
         <form action="/announcement" method="POST" enctype="multipart/form-data">
             <label for="brand">Марка:</label>
-            <input type="text" id="brand" name="brand" autocomplete="off" oninput="handleBrandInput(this.value)">
+            <input type="text" id="brand" name="brand" required autocomplete="off" oninput="handleBrandInput(this.value)">
             <div id="brand-autocomplete" class="autocomplete-items"></div>
             <label for="year">Год выпуска:</label>
-            <input type="text" id="year" name="year" autocomplete="off" oninput="handleYearInput(this.value)">
+            <input type="text" id="year" name="year" required autocomplete="off" oninput="handleYearInput(this.value)">
             <div id="year-autocomplete" class="autocomplete-items"></div>
             <label for="part">Запчасть:</label>
-            <input type="text" id="part" name="part" autocomplete="off" oninput="handlePartInput(this.value)">
+            <input type="text" id="part" name="part" required autocomplete="off" oninput="handlePartInput(this.value)">
             <div id="part-autocomplete" class="autocomplete-items"></div>
             <label for="model">Модель:</label>
             <input type="text" id="model" name="model" required autocomplete="off"

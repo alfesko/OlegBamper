@@ -460,7 +460,6 @@ app.put('/api/announcements/:id', upload.array('photos', 5), async (req, res) =>
 
         const photosToDelete = JSON.parse(req.body.photosToDelete || '[]');
         if (photosToDelete.length > 0) {
-            // Удаляем фото из массива (сортировка по убыванию чтобы не сбивались индексы)
             photosToDelete.sort((a, b) => b - a).forEach(index => {
                 if (index >= 0 && index < currentPhotos.length) {
                     currentPhotos.splice(index, 1);
