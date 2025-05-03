@@ -9251,9 +9251,10 @@
 
                 showSlide(0);
             }
-            announcementElement.addEventListener('click', () => {
-                showAnnouncementDetails(announcement.id);
-            });
+            announcementElement.addEventListener('click', (e) => {
+                if (!e.target.closest('.slider-container') && !e.target.closest('.announcement-actions')) {
+                    showAnnouncementDetails(announcement.id);
+                }});
             announcementsContainer.appendChild(announcementElement);
         }
     }
