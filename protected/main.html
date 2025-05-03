@@ -9082,63 +9082,95 @@
             return {loggedIn: false, userId: null, isAdmin: false};
         }
     }
+    // Глобальная функция для открытия модального окна с фото
+    function openModal(imgSrc) {
+        let modal = document.getElementById('imageModal');
+        if (!modal) {
+            // Если модального окна нет, создаем его
+            const modalHTML = `
+            <div id="imageModal" class="modal">
+                <span class="close">&times;</span>
+                <img class="modal-content" id="modalImage">
+            </div>
+        `;
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+            modal = document.getElementById('imageModal');
+            const modalImg = document.getElementById("modalImage");
+            const span = document.getElementsByClassName("close")[0];
 
+            span.onclick = function() {
+                modal.style.display = "none";
+            }
+
+            modal.onclick = function(event) {
+                if (event.target === modal) {
+                    modal.style.display = "none";
+                }
+            }
+        }
+
+        const modalImg = document.getElementById("modalImage");
+        modal.style.display = "block";
+        modalImg.src = imgSrc;
+    }
     async function showAnnouncementDetails(announcementId) {
         try {
             document.getElementById('pagination').style.display = 'none';
             const response = await fetch(`/api/announcements/${announcementId}`);
             const announcement = await response.json();
 
-            const priceByn = announcement.price_byn.toFixed(2) || (announcement.price * currentRates.usd_to_byn).toFixed(2);
-            const priceEur = announcement.price_eur.toFixed(2) || (announcement.price * currentRates.usd_to_byn / currentRates.eur_to_byn).toFixed(2);
-            const priceRub = announcement.price_rub.toFixed(2) || (announcement.price * currentRates.usd_to_byn / currentRates.rub_to_byn * 100).toFixed(2);
+            const oldModal = document.getElementById('imageModal');
+            if (oldModal) oldModal.remove();
+
+            const modalHTML = `
+            <div id="imageModal" class="modal">
+                <span class="close">&times;</span>
+                <img class="modal-content" id="modalImage">
+                <div class="caption"></div>
+            </div>
+        `;
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+            const modal = document.getElementById('imageModal');
+            const modalImg = document.getElementById("modalImage");
+            const closeBtn = document.querySelector('.close');
+
+            const openModal = (imgSrc) => {
+                modal.style.display = "block";
+                modalImg.src = imgSrc;
+            };
+
+            const closeModal = () => {
+                modal.style.display = "none";
+            };
+
+            closeBtn.onclick = closeModal;
+            modal.onclick = (event) => {
+                if (event.target === modal) closeModal();
+            };
 
             const detailsHTML = `
             <div class="announcement-details">
-                 <button class="back-btn" onclick="window.location.href='/'">Назад к списку</button>
+                <button class="back-btn" onclick="window.location.href='/'">Назад к списку</button>
                 <h2>${announcement.brand} ${announcement.model} (${announcement.year})</h2>
 
                 <div class="photo-gallery">
                     ${announcement.photos.map(photo =>
-                `<img src="${photo}" alt="Фото объявления">`
+                `<img src="${photo}" alt="Фото объявления" class="gallery-image">`
             ).join('')}
                 </div>
 
-                <div class="details-content">
-                    <div class="details-section">
-                        <h3>Основные характеристики</h3>
-                        <p><strong>Год выпуска:</strong> ${announcement.year || 'Не указано'}</p>
-                        <p><strong>Объем двигателя:</strong> ${announcement.engine_volume || 'Не указано'}</p>
-                        <p><strong>Тип топлива:</strong> ${announcement.fuel_type || 'Не указано'}</p>
-                        <p><strong>Подтип топлива:</strong> ${announcement.fuel_subtype || 'Не указано'}</p>
-                        <p><strong>Коробка передач:</strong> ${announcement.transmission || 'Не указано'}</p>
-                        <p><strong>Тип кузова:</strong> ${announcement.body_type || 'Не указано'}</p>
-                    </div>
-
-                    <div class="details-section">
-                        <h3>Цена</h3>
-                        <p><strong>USD:</strong> ${announcement.price || 'Не указана'}</p>
-                        <p><strong>BYN:</strong> ${priceByn}</p>
-                        <p><strong>EUR:</strong> ${priceEur}</p>
-                        <p><strong>RUB:</strong> ${priceRub}</p>
-                    </div>
-
-                    <div class="details-section">
-                        <h3>Детали запчасти</h3>
-                        <p><strong>Название:</strong> ${announcement.part || 'Не указано'}</p>
-                        <p><strong>Номер запчасти:</strong> ${announcement.part_number || 'Не указан'}</p>
-                        <p><strong>Артикул:</strong> ${announcement.article || 'Не указан'}</p>
-                    </div>
-
-                    <div class="details-section">
-                        <h3>Описание</h3>
-                        <p>${announcement.description || 'Нет описания'}</p>
-                    </div>
-                </div>
+                ${generateAnnouncementDetails(announcement)}
             </div>
         `;
 
             document.querySelector('.main-content').innerHTML = detailsHTML;
+
+            document.querySelectorAll('.gallery-image').forEach(img => {
+                img.addEventListener('click', () => {
+                    openModal(img.src);
+                });
+            });
 
         } catch (error) {
             console.error('Ошибка при загрузке объявления:', error);
@@ -9146,6 +9178,45 @@
         }
     }
 
+    function generateAnnouncementDetails(announcement) {
+        const priceByn = announcement.price_byn.toFixed(2) || (announcement.price * currentRates.usd_to_byn).toFixed(2);
+        const priceEur = announcement.price_eur.toFixed(2) || (announcement.price * currentRates.usd_to_byn / currentRates.eur_to_byn).toFixed(2);
+        const priceRub = announcement.price_rub.toFixed(2) || (announcement.price * currentRates.usd_to_byn / currentRates.rub_to_byn * 100).toFixed(2);
+
+        return `
+        <div class="details-content">
+            <div class="details-section">
+                <h3>Основные характеристики</h3>
+                <p><strong>Год выпуска:</strong> ${announcement.year || 'Не указано'}</p>
+                <p><strong>Объем двигателя:</strong> ${announcement.engine_volume || 'Не указано'}</p>
+                <p><strong>Тип топлива:</strong> ${announcement.fuel_type || 'Не указано'}</p>
+                <p><strong>Подтип топлива:</strong> ${announcement.fuel_subtype || 'Не указано'}</p>
+                <p><strong>Коробка передач:</strong> ${announcement.transmission || 'Не указано'}</p>
+                <p><strong>Тип кузова:</strong> ${announcement.body_type || 'Не указано'}</p>
+            </div>
+
+            <div class="details-section">
+                <h3>Цена</h3>
+                <p><strong>USD:</strong> ${announcement.price || 'Не указана'}</p>
+                <p><strong>BYN:</strong> ${priceByn}</p>
+                <p><strong>EUR:</strong> ${priceEur}</p>
+                <p><strong>RUB:</strong> ${priceRub}</p>
+            </div>
+
+            <div class="details-section">
+                <h3>Детали запчасти</h3>
+                <p><strong>Название:</strong> ${announcement.part || 'Не указано'}</p>
+                <p><strong>Номер запчасти:</strong> ${announcement.part_number || 'Не указан'}</p>
+                <p><strong>Артикул:</strong> ${announcement.article || 'Не указан'}</p>
+            </div>
+
+            <div class="details-section">
+                <h3>Описание</h3>
+                <p>${announcement.description || 'Нет описания'}</p>
+            </div>
+        </div>
+    `;
+    }
     function displayAnnouncements(announcements, currentUserId, isAdmin) {
         const announcementsContainer = document.getElementById('announcements');
         announcementsContainer.innerHTML = '';
@@ -9214,6 +9285,11 @@
                     const img = document.createElement('img');
                     img.src = photoPath;
                     img.alt = "Фото объявления";
+                    img.style.cursor = 'pointer';
+                    img.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        openModal(photoPath);
+                    });
                     slider.appendChild(img);
                 });
 
