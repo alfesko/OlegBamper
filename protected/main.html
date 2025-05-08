@@ -9206,6 +9206,7 @@
                 <p><strong>Название:</strong> ${announcement.part || 'Не указано'}</p>
                 <p><strong>Номер запчасти:</strong> ${announcement.part_number || 'Не указан'}</p>
                 <p><strong>Артикул:</strong> ${announcement.article || 'Не указан'}</p>
+                <p><strong>Номер телефона:</strong> ${announcement.phone || 'Не указан'}</p>
             </div>
 
             <div class="details-section">
@@ -9245,6 +9246,7 @@
                         `${announcement.price} USD<br>${announcement.price_eur} EUR<br>${announcement.price_rub} RUB<br>${announcement.price_byn} BYN` :
                         null
                 },
+                {name: 'Номер телефона', value: announcement.phone},
                 {name: 'Артикул', value: announcement.article},
                 {name: 'Дата', value: formattedDate}
             ];
