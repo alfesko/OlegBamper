@@ -109,6 +109,12 @@ app.post('/announcement', upload.array('photos', 5), async (req, res) => {
     if (!req.session.loggedIn) {
         return res.status(401).send('Вы должны быть авторизованы для добавления объявления.');
     }
+    const { phone } = req.body;
+    const phoneRegex = /^\+375(25|29|33|44)\d{7}$/;
+
+    if (!phoneRegex.test(phone.replace(/\s/g, ''))) {
+        return res.status(400).send('Неверный формат номера телефона');
+    }
 
     const userId = req.session.userId;
 
@@ -133,8 +139,8 @@ app.post('/announcement', upload.array('photos', 5), async (req, res) => {
     const query = `
         INSERT INTO announcements (brand, year, model, engine_volume, transmission, body_type,
                                    description, part_number, photos, fuel_type, fuel_subtype, part, price, article,
-                                   user_id)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+                                   user_id, phone)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
     `;
 
     const values = [
@@ -152,7 +158,8 @@ app.post('/announcement', upload.array('photos', 5), async (req, res) => {
         part,
         price,
         article,
-        userId
+        userId,
+        phone.replace(/\s/g, '')
     ];
 
     try {
@@ -432,7 +439,11 @@ app.put('/api/announcements/:id', upload.array('photos', 5), async (req, res) =>
     if (!req.session.loggedIn) {
         return res.status(401).send('Вы должны быть авторизованы.');
     }
-
+    const { phone } = req.body;
+    const phoneRegex = /^\+375(25|29|33|44)\d{7}$/;
+    if (!phoneRegex.test(phone.replace(/\s/g, ''))) {
+        return res.status(400).send('Неверный формат номера телефона');
+    }
     const userId = req.session.userId;
     const {id} = req.params;
 
@@ -499,8 +510,9 @@ app.put('/api/announcements/:id', upload.array('photos', 5), async (req, res) =>
                 fuel_subtype  = $10,
                 part          = $11,
                 price         = $12,
-                photos        = $13
-            WHERE id = $14
+                photos        = $13,
+                phone = $14
+            WHERE id = $15
         `;
 
         const values = [
@@ -517,6 +529,7 @@ app.put('/api/announcements/:id', upload.array('photos', 5), async (req, res) =>
             part,
             price,
             updatedPhotos,
+            phone.replace(/\s/g, ''),
             id
         ];
 

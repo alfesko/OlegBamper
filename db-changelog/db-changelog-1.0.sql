@@ -62,3 +62,5 @@ ALTER TABLE announcements
 ALTER TABLE announcements ADD COLUMN user_id INTEGER REFERENCES users(id) ON DELETE CASCADE;
 ALTER TABLE users
     ADD COLUMN is_admin BOOLEAN DEFAULT FALSE;
+ALTER TABLE announcements
+    ADD COLUMN phone VARCHAR(20);

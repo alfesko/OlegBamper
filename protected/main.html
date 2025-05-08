@@ -9082,11 +9082,9 @@
             return {loggedIn: false, userId: null, isAdmin: false};
         }
     }
-    // Глобальная функция для открытия модального окна с фото
     function openModal(imgSrc) {
         let modal = document.getElementById('imageModal');
         if (!modal) {
-            // Если модального окна нет, создаем его
             const modalHTML = `
             <div id="imageModal" class="modal">
                 <span class="close">&times;</span>

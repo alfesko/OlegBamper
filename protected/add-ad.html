@@ -94,6 +94,11 @@
             <input type="text" id="description" name="description">
             <label for="partNumber">Номер запчасти:</label>
             <input type="text" id="partNumber" name="partNumber">
+            <label for="phone">Номер телефона:</label>
+            <input type="tel" id="phone" name="phone"
+                   pattern="\+375\s?(25|29|33|44)\d{7}"
+                   placeholder="+375 XX XXXXXXX"
+                   required>
             <label for="price">Цена (USD):</label>
             <input type="number" id="price" name="price" step="1" min="0" required>
             <label for="photos">Фото объявления:</label>
